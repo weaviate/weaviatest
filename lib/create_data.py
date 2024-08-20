@@ -1,4 +1,4 @@
-import common
+import lib.common as common
 import json
 import numpy as np
 import string
@@ -50,14 +50,6 @@ def __import_json(collection, file_name, cl, num_objects=None):
     return counter
 
 
-# Insert objects to the replicated collection
-def __get_random_string(length):
-    # choose from all lowercase letter
-    letters = string.ascii_lowercase
-    result_str = "".join(random.choice(letters) for i in range(length))
-    return result_str
-
-
 def __generate_data_object(number_objects):
 
     data_objects = []
@@ -67,18 +59,18 @@ def __generate_data_object(number_objects):
         release_date = random_date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         data_object = {
-            "title": "title" + __get_random_string(10),
-            "genres": "genre" + __get_random_string(3),
-            "keywords": "keywords" + __get_random_string(3),
+            "title": "title" + common.get_random_string(10),
+            "genres": "genre" + common.get_random_string(3),
+            "keywords": "keywords" + common.get_random_string(3),
             "popularity": float(random.randint(1, 200)),
-            "runtime": "runtime" + __get_random_string(3),
-            "cast": "cast" + __get_random_string(3),
-            "language": "language" + __get_random_string(3),
-            "tagline": "tagline" + __get_random_string(3),
+            "runtime": "runtime" + common.get_random_string(3),
+            "cast": "cast" + common.get_random_string(3),
+            "language": "language" + common.get_random_string(3),
+            "tagline": "tagline" + common.get_random_string(3),
             "budget": random.randint(1_000_000, 1_000_0000_000),
             "release_date": release_date,
             "revenue": random.randint(1_000_000, 10_000_0000_000),
-            "status": "status" + __get_random_string(3),
+            "status": "status" + common.get_random_string(3),
         }
 
         data_objects.append(data_object)

@@ -1,4 +1,4 @@
-import common
+import lib.common as common
 import semver
 import weaviate.classes.config as wvc
 from weaviate.backup.backup import BackupCompressionLevel, BackupConfigCreate

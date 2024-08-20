@@ -1,4 +1,4 @@
-import common
+import lib.common as common
 
 
 def delete_class(host, api_key, port, class_name):

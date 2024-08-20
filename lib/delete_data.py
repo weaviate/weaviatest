@@ -1,4 +1,4 @@
-import common
+import lib.common as common
 import numpy as np
 import weaviate.classes.config as wvc
 

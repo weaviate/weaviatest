@@ -1,4 +1,4 @@
-import common
+import lib.common as common
 import numpy as np
 import weaviate.classes.config as wvc
 from weaviate.classes.query import MetadataQuery
@@ -24,7 +24,11 @@ def __query_data(collection, num_objects, cl, search_type, query):
     else:
         print(f"Invalid search type: {search_type}. Please choose from 'fetch', 'vector', 'keyword', or 'hybrid'.")
         return
-        
+    
+    if response != None:
+        common.pp_objects(response)
+    else:
+        print("No objects found")
     end_time = datetime.now()
     latency = end_time - start_time
 

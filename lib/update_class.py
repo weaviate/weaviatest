@@ -1,4 +1,4 @@
-import common
+import lib.common as common
 import weaviate.classes.config as wvc
 
 

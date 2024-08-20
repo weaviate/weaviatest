@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
 import click
-from create_class import create_class
-from create_tenants import create_tenants
-from create_backup import create_backup
-from delete_class import delete_class
-from delete_data import delete_data
-from delete_tenants import delete_tenants
-from ingest_data import ingest_data
-from update_class import update_class
-from update_data import update_data
-from update_tenants import update_tenants
-from query_data import query_data
-from restore_backup import restore_backup
+from lib.create_class import create_class
+from lib.create_tenants import create_tenants
+from lib.create_backup import create_backup
+from lib.delete_class import delete_class
+from lib.delete_data import delete_data
+from lib.delete_tenants import delete_tenants
+from lib.create_data import ingest_data
+from lib.update_class import update_class
+from lib.update_data import update_data
+from lib.update_tenants import update_tenants
+from lib.query_data import query_data
+from lib.restore_backup import restore_backup
 
 # General CLI group for Weaviate operations
 @click.group()
@@ -357,9 +357,9 @@ def restore_backup_cli(ctx, backend, backup_id, wait):
 @query.command("data")
 @click.option("--class_name", default="Movies", help="The name of the class to query.")
 @click.option("--search_type", default="fetch", type=click.Choice(["fetch", "vector", "keyword", "hybrid"]), help='Search type (default: "fetch").')
-@click.option("--query", default=None, help="The query to execute.")
+@click.option("--query", default="Action movie", help="Query string for the search. Only used when search type is vector, keyword or hybrid (default: 'Action movie').")
 @click.option("--consistency_level", default="quorum", type=click.Choice(["quorum", "all", "one"]), help="Consistency level (default: 'quorum').")
-@click.option("--number_objects", default=100, help="Number of objects to query (default: 100).")
+@click.option("--number_objects", default=10, help="Number of objects to query (default: 10).")
 @click.pass_context
 def query_data_cli(ctx, class_name, search_type, query, consistency_level, number_objects):
     """Query data in a class in Weaviate."""

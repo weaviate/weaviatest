@@ -1,4 +1,6 @@
 import socket
+import string
+import random
 import weaviate
 
 def check_host_docker_internal():
@@ -28,3 +30,23 @@ def connect_to_weaviate(host, api_key, port):
             auth_credentials=weaviate.auth.AuthApiKey(api_key=api_key),
         )
     return client
+
+# Insert objects to the replicated collection
+def get_random_string(length):
+    # choose from all lowercase letter
+    letters = string.ascii_lowercase
+    result_str = "".join(random.choice(letters) for i in range(length))
+    return result_str
+
+# Pretty print objects in the response in a table format
+def pp_objects(response):
+    if len(response.objects) == 0:
+        print("No objects found")
+        return
+    print(f"{'ID':<37}{'Title':<37}{'Keywords':<37}{'Distance':<37}")
+    for obj in response.objects:
+        print(
+            f"{str(obj.uuid):<36} {obj.properties['title'][:36]:<36} {obj.properties['keywords'][:36]:<36} {obj.metadata.distance:<36} "
+        )
+    print(f"{'':<37}{'':<37}{'':<37}{'':<37}")
+    print(f"Total: {len(response.objects)} objects")

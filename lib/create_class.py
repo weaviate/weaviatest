@@ -1,5 +1,5 @@
 import weaviate.classes.config as wvc
-import common
+import lib.common as common
 
 def create_class(host, api_key, port, class_name, replication_factor, async_enabled,
                  vector_index, training_limit, multitenant, auto_tenant_creation,

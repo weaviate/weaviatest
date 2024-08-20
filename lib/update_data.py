@@ -1,20 +1,10 @@
-#!/usr/bin/env python3
-
-import common
+import lib.common as common
 import numpy as np
 import string
 import random
 import weaviate.classes.config as wvc
 from datetime import datetime, timedelta
 import os
-
-
-# Insert objects to the replicated collection
-def __get_random_string(length):
-    # choose from all lowercase letter
-    letters = string.ascii_lowercase
-    result_str = "".join(random.choice(letters) for i in range(length))
-    return result_str
 
 
 def __update_data_object():
@@ -24,18 +14,18 @@ def __update_data_object():
     release_date = random_date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     data_object = {
-        "title": "title-update" + __get_random_string(10),
-        "genres": "genre-update" + __get_random_string(3),
-        "keywords": "keywords-update" + __get_random_string(3),
+        "title": "title-update" + common.get_random_string(10),
+        "genres": "genre-update" + common.get_random_string(3),
+        "keywords": "keywords-update" + common.get_random_string(3),
         "popularity": float(random.randint(1, 200)),
-        "runtime": "runtime-update" + __get_random_string(3),
-        "cast": "cast-update" + __get_random_string(3),
-        "language": "language-update" + __get_random_string(3),
-        "tagline": "tagline-update" + __get_random_string(3),
+        "runtime": "runtime-update" + common.get_random_string(3),
+        "cast": "cast-update" + common.get_random_string(3),
+        "language": "language-update" + common.get_random_string(3),
+        "tagline": "tagline-update" + common.get_random_string(3),
         "budget": random.randint(1_000_000, 1_000_0000_000),
         "release_date": release_date,
         "revenue": random.randint(1_000_000, 10_000_0000_000),
-        "status": "status-update" + __get_random_string(3),
+        "status": "status-update" + common.get_random_string(3),
     }
 
     return data_object
