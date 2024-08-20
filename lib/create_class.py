@@ -1,15 +1,15 @@
 import weaviate.classes.config as wvc
 import lib.common as common
 
-def create_class(host, api_key, port, class_name, replication_factor, async_enabled,
+def create_class(host, api_key, port, collection, replication_factor, async_enabled,
                  vector_index, training_limit, multitenant, auto_tenant_creation,
                  auto_tenant_activation, auto_schema, shards, vectorizer):
     
     client = common.connect_to_weaviate(host, api_key, port)
 
-    if client.collections.exists(class_name):
+    if client.collections.exists(collection):
         print(
-            f"Class '{class_name}' already exists in Weaviate. Delete using <delete class> command."
+            f"Class '{collection}' already exists in Weaviate. Delete using <delete class> command."
         )
         client.close()
         return
@@ -72,7 +72,7 @@ def create_class(host, api_key, port, class_name, replication_factor, async_enab
     
     try:
         collection = client.collections.create(
-            name=class_name,
+            name=collection,
             vector_index_config=vector_index_map[vector_index],
             replication_config=wvc.Configure.replication(
                 factor=replication_factor, async_enabled=async_enabled
@@ -93,12 +93,12 @@ def create_class(host, api_key, port, class_name, replication_factor, async_enab
             properties=properties if auto_schema else None,
         )
     except Exception as e:
-        print(f"Error creating class '{class_name}': {e}")
+        print(f"Error creating class '{collection}': {e}")
         client.close()
         return
 
-    assert client.collections.exists(class_name)
+    assert client.collections.exists(collection)
 
-    print(f"Class '{class_name}' created successfully in Weaviate.")
+    print(f"Class '{collection}' created successfully in Weaviate.")
 
     client.close()

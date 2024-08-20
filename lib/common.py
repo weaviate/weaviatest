@@ -43,10 +43,10 @@ def pp_objects(response):
     if len(response.objects) == 0:
         print("No objects found")
         return
-    print(f"{'ID':<37}{'Title':<37}{'Keywords':<37}{'Distance':<37}")
+    print(f"{'ID':<37}{'Title':<37}{'Keywords':<37}{'Distance':<11}{'Certainty':<11}{'Score':<11}")
     for obj in response.objects:
         print(
-            f"{str(obj.uuid):<36} {obj.properties['title'][:36]:<36} {obj.properties['keywords'][:36]:<36} {obj.metadata.distance:<36} "
+            f'{str(obj.uuid):<36} {obj.properties["title"][:36]:<36} {obj.properties["keywords"][:36]:<36} {obj.metadata.distance if obj.metadata.distance else "None":<10} {obj.metadata.certainty if obj.metadata.certainty else "None":<10} {obj.metadata.score if obj.metadata.score else "None":<10}'
         )
-    print(f"{'':<37}{'':<37}{'':<37}{'':<37}")
+    print(f"{'':<37}{'':<37}{'':<37}{'':<11}{'':<11}{'':<11}")
     print(f"Total: {len(response.objects)} objects")

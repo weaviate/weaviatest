@@ -73,16 +73,16 @@ def __update_data(collection, num_objects, cl, randomize):
         print(f"Updated {num_objects} objects into class '{collection.name}'")
 
 
-def update_data(host, api_key, port, class_name, number_objects, consistency_level, randomize):
+def update_data(host, api_key, port, collection, limit, consistency_level, randomize):
 
     client = common.connect_to_weaviate(host, api_key, port)
-    if not client.collections.exists(class_name):
+    if not client.collections.exists(collection):
         print(
-            f"Class '{class_name}' does not exist in Weaviate. Create first using ./create_class.py"
+            f"Class '{collection}' does not exist in Weaviate. Create first using ./create_class.py"
         )
         return
 
-    collection = client.collections.get(class_name)
+    collection = client.collections.get(collection)
     try:
         tenants = [key for key in collection.tenants.get().keys()]
     except Exception as e:
@@ -103,7 +103,7 @@ def update_data(host, api_key, port, class_name, number_objects, consistency_lev
         if tenant == "None":
             __update_data(
                 collection,
-                number_objects,
+                limit,
                 cl_map[consistency_level],
                 randomize,
             )
@@ -111,7 +111,7 @@ def update_data(host, api_key, port, class_name, number_objects, consistency_lev
             print(f"Processing tenant '{tenant}'")
             __update_data(
                 collection.with_tenant(tenant),
-                number_objects,
+                limit,
                 cl_map[consistency_level],
                 randomize,
             )

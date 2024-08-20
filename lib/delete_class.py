@@ -1,21 +1,21 @@
 import lib.common as common
 
 
-def delete_class(host, api_key, port, class_name):
+def delete_class(host, api_key, port, collection):
 
     client = common.connect_to_weaviate(host, api_key, port)
 
-    if client.collections.exists(class_name):
+    if client.collections.exists(collection):
         try:
-            client.collections.delete(class_name)
+            client.collections.delete(collection)
         except Exception as e:
-            print(f"Failed to delete class '{class_name}' in Weaviate.: {e}")
+            print(f"Failed to delete class '{collection}' in Weaviate.: {e}")
             client.close()
             return
 
-    assert not client.collections.exists(class_name)
+    assert not client.collections.exists(collection)
 
-    print(f"Class '{class_name}' deleted successfully in Weaviate.")
+    print(f"Class '{collection}' deleted successfully in Weaviate.")
 
     client.close()
 

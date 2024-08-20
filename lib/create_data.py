@@ -50,10 +50,10 @@ def __import_json(collection, file_name, cl, num_objects=None):
     return counter
 
 
-def __generate_data_object(number_objects):
+def __generate_data_object(limit):
 
     data_objects = []
-    for _ in range(number_objects):
+    for _ in range(limit):
         date = datetime.strptime("1980-01-01", "%Y-%m-%d")
         random_date = date + timedelta(days=random.randint(1, 15_000))
         release_date = random_date.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -102,16 +102,16 @@ def __ingest_data(collection, num_objects, cl, randomize):
         print(f"Inserted {num_objects_inserted} objects into class '{collection.name}'")
 
 
-def ingest_data(host, api_key, port, class_name, number_objects, consistency_level, randomize, auto_tenants):
+def ingest_data(host, api_key, port, collection, limit, consistency_level, randomize, auto_tenants):
 
     client = common.connect_to_weaviate(host, api_key, port)
-    if not client.collections.exists(class_name):
+    if not client.collections.exists(collection):
         print(
-            f"Class '{class_name}' does not exist in Weaviate. Create first using <create class> command"
+            f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command"
         )
         return
 
-    collection = client.collections.get(class_name)
+    collection = client.collections.get(collection)
     try:
         tenants = [key for key in collection.tenants.get().keys()]
     except Exception as e:
@@ -149,7 +149,7 @@ def ingest_data(host, api_key, port, class_name, number_objects, consistency_lev
         if tenant == "None":
             __ingest_data(
                 collection,
-                number_objects,
+                limit,
                 cl_map[consistency_level],
                 randomize,
             )
@@ -157,7 +157,7 @@ def ingest_data(host, api_key, port, class_name, number_objects, consistency_lev
             print(f"Processing tenant '{tenant}'")
             __ingest_data(
                 collection.with_tenant(tenant),
-                number_objects,
+                limit,
                 cl_map[consistency_level],
                 randomize,
             )

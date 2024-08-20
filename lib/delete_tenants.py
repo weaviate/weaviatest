@@ -3,16 +3,16 @@ import weaviate.classes.config as wvc
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
 
-def delete_tenants(host, api_key, port, class_name, tenant_suffix, number_tenants):
+def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenants):
 
     client = common.connect_to_weaviate(host, api_key, port)
-    if not client.collections.exists(class_name):
+    if not client.collections.exists(collection):
         print(
-            f"Class '{class_name}' does not exist in Weaviate. Create first using <create class> command"
+            f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command"
         )
         return
 
-    collection = client.collections.get(class_name)
+    collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
         print(

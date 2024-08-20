@@ -14,13 +14,13 @@ def __query_data(collection, num_objects, cl, search_type, query):
         response = collection.with_consistency_level(cl).query.fetch_objects(limit=num_objects)
     elif search_type == "vector":
         # Vector logic
-        response = collection.with_consistency_level(cl).query.near_text(query=query, return_metadata=MetadataQuery(distance=True), limit=num_objects)
+        response = collection.with_consistency_level(cl).query.near_text(query=query, return_metadata=MetadataQuery(distance=True, certainty=True), limit=num_objects)
     elif search_type == "keyword":
         # Keyword logic
-        response = collection.with_consistency_level(cl).query.bm25(query=query, return_metadata=MetadataQuery(distance=True), limit=num_objects)
+        response = collection.with_consistency_level(cl).query.bm25(query=query, return_metadata=MetadataQuery(score=True), limit=num_objects)
     elif search_type == "hybrid":
         # Hybrid logic
-        response = collection.with_consistency_level(cl).query.hybrid(query=query, return_metadata=MetadataQuery(distance=True), limit=num_objects)
+        response = collection.with_consistency_level(cl).query.hybrid(query=query, return_metadata=MetadataQuery(score=True), limit=num_objects)
     else:
         print(f"Invalid search type: {search_type}. Please choose from 'fetch', 'vector', 'keyword', or 'hybrid'.")
         return
@@ -35,17 +35,17 @@ def __query_data(collection, num_objects, cl, search_type, query):
     print(f"Queried {num_objects} objects using {search_type} search into class '{collection.name}' in {latency.total_seconds()} s")
 
 
-def query_data(host, api_key, port, class_name, search_type, query, consistency_level, number_objects):
+def query_data(host, api_key, port, collection, search_type, query, consistency_level, limit):
 
     client = common.connect_to_weaviate(host, api_key, port)
-    if not client.collections.exists(class_name):
+    if not client.collections.exists(collection):
         print(
-            f"Class '{class_name}' does not exist in Weaviate. Create first using <create class> command."
+            f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command."
         )
         client.close()
         return
 
-    collection = client.collections.get(class_name)
+    collection = client.collections.get(collection)
     try:
         tenants = [key for key in collection.tenants.get().keys()]
     except Exception as e:
@@ -66,7 +66,7 @@ def query_data(host, api_key, port, class_name, search_type, query, consistency_
         if tenant == "None":
             __query_data(
                 collection,
-                number_objects,
+                limit,
                 cl_map[consistency_level],
                 search_type,
                 query,
@@ -75,7 +75,7 @@ def query_data(host, api_key, port, class_name, search_type, query, consistency_
             print(f"Querying tenant '{tenant}'")
             __query_data(
                 collection.with_tenant(tenant),
-                number_objects,
+                limit,
                 cl_map[consistency_level],
                 search_type,
                 query,

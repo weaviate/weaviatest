@@ -4,19 +4,19 @@ import weaviate.classes.config as wvc
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
 
-def update_tenants(host, api_key, port, class_name, tenant_suffix, number_tenants, state):
+def update_tenants(host, api_key, port, collection, tenant_suffix, number_tenants, state):
 
     # Connect to Weaviate instance
     client = common.connect_to_weaviate(host, api_key, port)
-    if not client.collections.exists(class_name):
+    if not client.collections.exists(collection):
         print(
-            f"Class '{class_name}' does not exist in Weaviate. Create first using ./create_class.py"
+            f"Class '{collection}' does not exist in Weaviate. Create first using ./create_class.py"
         )
         client.close()
         return
 
     version = semver.Version.parse(client.get_meta()["version"])
-    collection = client.collections.get(class_name)
+    collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
         print(

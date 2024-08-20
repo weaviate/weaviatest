@@ -2,13 +2,13 @@ import lib.common as common
 import weaviate.classes.config as wvc
 
 
-def update_class(host, api_key, port, class_name, description, vector_index, training_limit,
+def update_class(host, api_key, port, collection, description, vector_index, training_limit,
                  async_enabled, auto_tenant_creation, auto_tenant_activation):
 
     client = common.connect_to_weaviate(host, api_key, port)
-    if not client.collections.exists(class_name):
+    if not client.collections.exists(collection):
         print(
-            f"Class '{class_name}' does not exist in Weaviate. Create first using ./create_class.py"
+            f"Class '{collection}' does not exist in Weaviate. Create first using ./create_class.py"
         )
         client.close()
         return
@@ -34,7 +34,7 @@ def update_class(host, api_key, port, class_name, description, vector_index, tra
         ),
     }
 
-    collection = client.collections.get(class_name)
+    collection = client.collections.get(collection)
     rf = collection.config.get().replication_config.factor
     mt = collection.config.get().multi_tenancy_config.enabled
     auto_tenant_creation = (
@@ -68,13 +68,13 @@ def update_class(host, api_key, port, class_name, description, vector_index, tra
             ),
         )
     except Exception as e:
-        print(f"Error updating class '{class_name}': {e}")
+        print(f"Error updating class '{collection}': {e}")
         client.close()
         return
 
-    assert client.collections.exists(class_name)
+    assert client.collections.exists(collection)
 
-    print(f"Class '{class_name}' modified successfully in Weaviate.")
+    print(f"Class '{collection}' modified successfully in Weaviate.")
 
     client.close()
 

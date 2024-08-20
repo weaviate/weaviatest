@@ -8,22 +8,22 @@ The Weaviatest CLI provides the following actions:
 
 ### Create
 
-- Create a class: `weaviatest.py create class --class_name <class_name> --multitenant --vector_index <vector_index> --replication_factor <replication_factor>`
-- Create data: `weaviatest.py create data --class_name <class_name> --number_objects <number_objects> --consistency_level <consistency_level> --randomize`
-- Create tenants: `weaviatest.py create tenants --class_name <class_name> --number_tenants <number_tenants>`
+- Create a class: `weaviatest.py create class --collection <collection> --multitenant --vector_index <vector_index> --replication_factor <replication_factor>`
+- Create data: `weaviatest.py create data --collection <collection> --limit <limit> --consistency_level <consistency_level> --randomize`
+- Create tenants: `weaviatest.py create tenants --collection <collection> --number_tenants <number_tenants>`
 - Create backup: `weaviatest.py create backup --backup_id <backup_id>`
 
 ### Update
 
-- Update class: `weaviatest.py update class --class_name <class_name> --new_class_name <new_class_name>`
-- Update tenants: `weaviatest.py update tenants --class_name <class_name> --number_tenants <number_tenants> --state <state>`
-- Update data: `weaviatest.py update data --class_name <class_name> --number_objects <number_objects> --consistency_level <consistency_level>`
+- Update class: `weaviatest.py update class --collection <collection> --new_collection <new_collection>`
+- Update tenants: `weaviatest.py update tenants --collection <collection> --number_tenants <number_tenants> --state <state>`
+- Update data: `weaviatest.py update data --collection <collection> --limit <limit> --consistency_level <consistency_level>`
 
 ### Delete
 
-- Delete class: `weaviatest.py delete class --class_name <class_name>`
-- Delete data: `weaviatest.py delete data --class_name <class_name>`
-- Delete tenants: `weaviatest.py delete tenants --class_name <class_name> --number_tenants <number_tenants>`
+- Delete class: `weaviatest.py delete class --collection <collection>`
+- Delete data: `weaviatest.py delete data --collection <collection>`
+- Delete tenants: `weaviatest.py delete tenants --collection <collection> --number_tenants <number_tenants>`
 
 ### Restore
 
@@ -31,7 +31,7 @@ The Weaviatest CLI provides the following actions:
 
 ### Query
 
-- Query: `weaviatest.py query --class_name <class_name> --query <query>`
+- Query: `weaviatest.py query --collection <collection> --query <query>`
 
 You can run the Weaviatest CLI directly from the command line.
 
@@ -62,15 +62,56 @@ Here are some examples of how to use the Weaviatest CLI:
 1. Create a multitenant class named `Films` with an RF of 3 and an HNSW vector index with PQ enabled (without a vectorizer). Then, add 100 tenants, add 100 objects per tenant with a consistency level of ONE, update all 100 tenants from HOT to COLD, delete 50 tenants, perform a backup, move all remaining tenants back to HOT, update 50 objects for each tenant with a consistency level of ALL, delete the class, and restore the backup:
 
 ```
-weaviatest.py create class --class_name "Films" --multitenant --vector_index hnsw_pq --replication_factor 3
-weaviatest.py create tenants --class_name "Films" --number_tenants 100
-weaviatest.py create data --class_name "Films" --number_objects 100 --consistency_level one --randomize
-weaviatest.py update tenants --class_name "Films" --number_tenants 100 --state cold
-weaviatest.py delete tenants --class_name "Films" --number_tenants 50
+weaviatest.py create class --collection "Films" --multitenant --vector_index hnsw_pq --replication_factor 3
+weaviatest.py create tenants --collection "Films" --number_tenants 100
+weaviatest.py create data --collection "Films" --limit 100 --consistency_level one --randomize
+weaviatest.py update tenants --collection "Films" --number_tenants 100 --state cold
+weaviatest.py delete tenants --collection "Films" --number_tenants 50
 weaviatest.py create backup --backup_id "my-films-backup" --wait
-weaviatest.py update tenants --class_name "Films" --number_tenants 50 --state hot
-weaviatest.py update data --class_name "Films" --number_objects 50 --consistency_level all
-weaviatest.py delete class --class_name "Films"
+weaviatest.py update tenants --collection "Films" --number_tenants 50 --state hot
+weaviatest.py update data --collection "Films" --limit 50 --consistency_level all
+weaviatest.py delete class --collection "Films"
 weaviatest.py restore backup --backup_id "my-films-backup" --wait
 ```
+
+## Docker image
+
+To build the Docker image for the Weaviatest CLI, follow these steps:
+
+1. Open a terminal and navigate to the root directory of the Weaviatest project.
+
+2. Run the following command to build the Docker image:
+
+    ```
+    docker build -t weaviatest .
+    ```
+
+    This command will build the Docker image with the tag `weaviatest`.
+
+## Running the application using Docker
+
+To run the Weaviatest CLI application using Docker, follow these steps:
+
+1. Open a terminal.
+
+2. Run the following command to create a class using the Weaviatest CLI:
+
+    ```
+    docker run weaviatest create class --collection <collection> --multitenant --vector_index <vector_index> --replication_factor <replication_factor>
+    ```
+
+    Replace `<collection>`, `<vector_index>`, and `<replication_factor>` with the desired values for your class.
+
+    You can use similar commands to run other actions provided by the Weaviatest CLI. Just replace `create class` with the desired action and provide the required parameters.
+
+    For example, to create data, use the following command:
+
+    ```
+    docker run weaviatest create data --collection <collection> --limit <limit> --consistency_level <consistency_level> --randomize
+    ```
+
+    Replace `<collection>`, `<limit>`, `<consistency_level>`, and `<randomize>` with the desired values for your data creation.
+
+    Note: Make sure you have the Docker daemon running before executing these commands. The application will detect if your docker container is running on MacOS and use `host.docker.internal` as host (otherwise the containerized application won't be able to communicate with `localhost`).
+
 

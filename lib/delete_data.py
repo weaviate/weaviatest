@@ -19,17 +19,17 @@ def __delete_data(collection, num_objects, cl):
     print(f"Deleted {num_objects} objects into class '{collection.name}'")
 
 
-def delete_data(host, api_key, port, class_name, number_objects, consistency_level):
+def delete_data(host, api_key, port, collection, limit, consistency_level):
 
     client = common.connect_to_weaviate(host, api_key, port)
-    if not client.collections.exists(class_name):
+    if not client.collections.exists(collection):
         print(
-            f"Class '{class_name}' does not exist in Weaviate. Create first using <create class> command."
+            f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command."
         )
         client.close()
         return
 
-    collection = client.collections.get(class_name)
+    collection = client.collections.get(collection)
     try:
         tenants = [key for key in collection.tenants.get().keys()]
     except Exception as e:
@@ -48,12 +48,12 @@ def delete_data(host, api_key, port, class_name, number_objects, consistency_lev
 
     for tenant in tenants:
         if tenant == "None":
-            __delete_data(collection, number_objects, cl_map[consistency_level])
+            __delete_data(collection, limit, cl_map[consistency_level])
         else:
             print(f"Processing tenant '{tenant}'")
             __delete_data(
                 collection.with_tenant(tenant),
-                number_objects,
+                limit,
                 cl_map[consistency_level],
             )
 
