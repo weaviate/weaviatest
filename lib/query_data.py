@@ -2,6 +2,7 @@ import lib.common as common
 import numpy as np
 import weaviate.classes.config as wvc
 from weaviate.classes.query import MetadataQuery
+from weaviate.collections.classes.tenants import TenantActivityStatus
 from datetime import datetime
 
 
@@ -47,7 +48,7 @@ def query_data(host, api_key, port, collection, search_type, query, consistency_
 
     collection = client.collections.get(collection)
     try:
-        tenants = [key for key in collection.tenants.get().keys()]
+        tenants = [key for key, tenant in collection.tenants.get().items() if tenant.activity_status == TenantActivityStatus.ACTIVE ]
     except Exception as e:
         # Check if the error is due to multi-tenancy being disabled
         if "multi-tenancy is not enabled" in str(e):

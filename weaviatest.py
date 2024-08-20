@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 
 import click
-from lib.create_class import create_class
+from lib.create_collection import create_collection
 from lib.create_tenants import create_tenants
 from lib.create_backup import create_backup
-from lib.delete_class import delete_class
+from lib.delete_collection import delete_collection
 from lib.delete_data import delete_data
 from lib.delete_tenants import delete_tenants
 from lib.create_data import ingest_data
-from lib.update_class import update_class
+from lib.update_collection import update_collection
 from lib.update_data import update_data
 from lib.update_tenants import update_tenants
 from lib.query_data import query_data
 from lib.restore_backup import restore_backup
+from lib.get_collection import get_collection
+from lib.get_tenants import get_tenants
 
 # General CLI group for Weaviate operations
 @click.group()
@@ -22,7 +24,7 @@ from lib.restore_backup import restore_backup
 @click.pass_context
 def cli(ctx, host, api_key, port):
     """
-    Weaviate CLI for managing classes, tenants, and data.
+    Weaviate CLI for managing collectiones, tenants, and data.
     """
     # Store the general options in the context object for use in subcommands
     ctx.ensure_object(dict)
@@ -59,9 +61,14 @@ def restore():
     """Restore backups in Weaviate."""
     pass
 
-# Subcommand to create a class
-@create.command("class")
-@click.option("--collection", default="Movies", help="The name of the class to create.")
+@cli.group()
+def get():
+    """Get and list resources in Weaviate."""
+    pass
+
+# Subcommand to create a collection
+@create.command("collection")
+@click.option("--collection", default="Movies", help="The name of the collection to create.")
 @click.option("--replication_factor", default=3, help="Replication factor (default: 3).")
 @click.option("--async_enabled", is_flag=True, help="Enable async (default: False).")
 @click.option("--vector_index", default="hnsw", type=click.Choice(["hnsw", "flat", "hnsw_pq", "hnsw_bq", "hnsw_sq", "flat_bq"]), help="Vector index type (default: 'hnsw').")
@@ -74,18 +81,18 @@ def restore():
 @click.option("--vectorizer", default=None, type=click.Choice(['contextionary', 'transformers', 'openai']),
               help="Vectorizer to use.")
 @click.pass_context
-def create_class_cli(ctx, collection, replication_factor, async_enabled, vector_index,
+def create_collection_cli(ctx, collection, replication_factor, async_enabled, vector_index,
                      training_limit, multitenant, auto_tenant_creation, auto_tenant_activation,
                      auto_schema, shards, vectorizer):
-    """Create a class in Weaviate."""
+    """Create a collection in Weaviate."""
 
     # Access the general arguments from the context object
     host = ctx.obj['host']
     api_key = ctx.obj['api_key']
     port = ctx.obj['port']
 
-    # Call the function from create_class.py passing both general and specific arguments
-    create_class(
+    # Call the function from create_collection.py passing both general and specific arguments
+    create_collection(
         host=host,
         api_key=api_key,
         port=port,
@@ -104,14 +111,14 @@ def create_class_cli(ctx, collection, replication_factor, async_enabled, vector_
 
 # Subcommand to ingest data
 @create.command("data")
-@click.option("--collection", default="Movies", help="The name of the class to ingest data into.")
+@click.option("--collection", default="Movies", help="The name of the collection to ingest data into.")
 @click.option("--limit", default=1000, help="Number of objects to import (default: 1000).")
 @click.option("--consistency_level", default="quorum", type=click.Choice(["quorum", "all", "one"]), help="Consistency level (default: 'quorum').")
 @click.option("--randomize", is_flag=True, help="Randomize the data (default: False).")
 @click.option("--auto_tenants", is_flag=True, help="Enable auto tenants (default: False).")
 @click.pass_context
 def create_data_cli(ctx, collection, limit, consistency_level, randomize, auto_tenants):
-    """Ingest data into a class in Weaviate."""
+    """Ingest data into a collection in Weaviate."""
     
     # Access the general arguments from the context object
     host = ctx.obj['host']
@@ -132,7 +139,7 @@ def create_data_cli(ctx, collection, limit, consistency_level, randomize, auto_t
     
 # Subcommand to create tenants (without --vectorizer option)
 @create.command("tenants")
-@click.option("--collection", default="Movies", help="The name of the class to create.")
+@click.option("--collection", default="Movies", help="The name of the collection to create.")
 @click.option("--tenant_suffix", default="Tenant--", help="The suffix to add to the tenant name (default: 'Tenant--').")
 @click.option("--number_tenants", default=100, help="Number of tenants to create (default: 100).")
 @click.option("--state", default="active", type=click.Choice(["hot", "active", "cold", "inactive", "frozen", "offloaded"]))
@@ -185,19 +192,19 @@ def create_backup_cli(ctx, backend, backup_id, include, exclude, wait, cpu_for_b
         cpu_for_backup=cpu_for_backup
     )
 
-@delete.command("class")
-@click.option("--collection", default="Movies", help="The name of the class to delete.")
+@delete.command("collection")
+@click.option("--collection", default="Movies", help="The name of the collection to delete.")
 @click.pass_context
-def delete_class_cli(ctx, collection):
-    """Delete a class in Weaviate."""
+def delete_collection_cli(ctx, collection):
+    """Delete a collection in Weaviate."""
     
     # Access the general arguments from the context object
     host = ctx.obj['host']
     api_key = ctx.obj['api_key']
     port = ctx.obj['port']
     
-    # Call the function from delete_class.py with general and specific arguments
-    delete_class(
+    # Call the function from delete_collection.py with general and specific arguments
+    delete_collection(
         host=host,
         api_key=api_key,
         port=port,
@@ -205,12 +212,12 @@ def delete_class_cli(ctx, collection):
     )
 
 @delete.command("data")
-@click.option("--collection", default="Movies", help="The name of the class to delete tenants from.")
+@click.option("--collection", default="Movies", help="The name of the collection to delete tenants from.")
 @click.option("--limit", default=100, help="Number of objects to delete (default: 100).")
 @click.option("--consistency_level", default="quorum", type=click.Choice(["quorum", "all", "one"]), help="Consistency level (default: 'quorum').")
 @click.pass_context
 def delete_data_cli(ctx, collection, limit, consistency_level):
-    """Delete data from a class in Weaviate."""
+    """Delete data from a collection in Weaviate."""
     
     # Access the general arguments from the context object
     host = ctx.obj['host']
@@ -228,12 +235,12 @@ def delete_data_cli(ctx, collection, limit, consistency_level):
     )
 
 @delete.command("tenants")
-@click.option("--collection", default="Movies", help="The name of the class to delete tenants from.")
+@click.option("--collection", default="Movies", help="The name of the collection to delete tenants from.")
 @click.option("--tenant_suffix", default="Tenant--", help="The suffix to add to the tenant name (default: 'Tenant--').")
 @click.option("--number_tenants", default=100, help="Number of tenants to delete (default: 100).")
 @click.pass_context
 def delete_tenants_cli(ctx, collection, tenant_suffix, number_tenants):
-    """Delete tenants from a class in Weaviate."""
+    """Delete tenants from a collection in Weaviate."""
     
     # Access the general arguments from the context object
     host = ctx.obj['host']
@@ -250,25 +257,25 @@ def delete_tenants_cli(ctx, collection, tenant_suffix, number_tenants):
         number_tenants=number_tenants
     )
 
-@update.command("class")
-@click.option("--collection", default="Movies", help="The name of the class to update.")
+@update.command("collection")
+@click.option("--collection", default="Movies", help="The name of the collection to update.")
 @click.option("--async_enabled", default=None, type=bool, help="Enable async (default: None).")
 @click.option("--vector_index", default=None, type=click.Choice(["hnsw", "flat", "hnsw_pq", "hnsw_bq", "hnsw_sq", "flat_bq"]), help='Vector index type (default: "None").')
-@click.option("--description", default=None, help="Class description (default: None).")
+@click.option("--description", default=None, help="collection description (default: None).")
 @click.option("--training_limit", default=10000, help="Training limit for PQ and SQ (default: 10000).")
 @click.option("--auto_tenant_creation",  default=None, type=bool, help="Enable auto tenant creation (default: None).")
 @click.option("--auto_tenant_activation",  default=None, type=bool, help="Enable auto tenant activation (default: None).")
 @click.pass_context
-def update_class_cli(ctx, collection, async_enabled, vector_index, description, training_limit, auto_tenant_creation, auto_tenant_activation):
-    """Update a class in Weaviate."""
+def update_collection_cli(ctx, collection, async_enabled, vector_index, description, training_limit, auto_tenant_creation, auto_tenant_activation):
+    """Update a collection in Weaviate."""
     
     # Access the general arguments from the context object
     host = ctx.obj['host']
     api_key = ctx.obj['api_key']
     port = ctx.obj['port']
     
-    # Call the function from update_class.py with general and specific arguments
-    update_class(
+    # Call the function from update_collection.py with general and specific arguments
+    update_collection(
         host=host,
         api_key=api_key,
         port=port,
@@ -282,13 +289,13 @@ def update_class_cli(ctx, collection, async_enabled, vector_index, description, 
     )
 
 @update.command("data")
-@click.option("--collection", default="Movies", help="The name of the class to update.")
+@click.option("--collection", default="Movies", help="The name of the collection to update.")
 @click.option("--limit", default=100, help="Number of objects to update (default: 100).")
 @click.option("--consistency_level", default="quorum", type=click.Choice(["quorum", "all", "one"]), help="Consistency level (default: 'quorum').")
 @click.option("--randomize", is_flag=True, help="Randomize the data (default: False).")
 @click.pass_context
 def update_data_cli(ctx, collection, limit, consistency_level, randomize):
-    """Update data in a class in Weaviate."""
+    """Update data in a collection in Weaviate."""
     
     # Access the general arguments from the context object
     host = ctx.obj['host']
@@ -308,7 +315,7 @@ def update_data_cli(ctx, collection, limit, consistency_level, randomize):
 
 
 @update.command("tenants")
-@click.option("--collection", default="Movies", help="The name of the class to update.")
+@click.option("--collection", default="Movies", help="The name of the collection to update.")
 @click.option("--tenant_suffix", default="Tenant--", help="The suffix to add to the tenant name (default: 'Tenant--').")
 @click.option("--number_tenants", default=100, help="Number of tenants to update (default: 100).")
 @click.option("--state", default="active", type=click.Choice(["hot", "active", "cold", "inactive", "frozen", "offloaded"]))
@@ -355,14 +362,14 @@ def restore_backup_cli(ctx, backend, backup_id, wait):
     )
 
 @query.command("data")
-@click.option("--collection", default="Movies", help="The name of the class to query.")
+@click.option("--collection", default="Movies", help="The name of the collection to query.")
 @click.option("--search_type", default="fetch", type=click.Choice(["fetch", "vector", "keyword", "hybrid"]), help='Search type (default: "fetch").')
 @click.option("--query", default="Action movie", help="Query string for the search. Only used when search type is vector, keyword or hybrid (default: 'Action movie').")
 @click.option("--consistency_level", default="quorum", type=click.Choice(["quorum", "all", "one"]), help="Consistency level (default: 'quorum').")
 @click.option("--limit", default=10, help="Number of objects to query (default: 10).")
 @click.pass_context
 def query_data_cli(ctx, collection, search_type, query, consistency_level, limit):
-    """Query data in a class in Weaviate."""
+    """Query data in a collection in Weaviate."""
     
     # Access the general arguments from the context object
     host = ctx.obj['host']
@@ -379,6 +386,46 @@ def query_data_cli(ctx, collection, search_type, query, consistency_level, limit
         query=query,
         consistency_level=consistency_level,
         limit=limit
+    )
+
+@get.command("collection")
+@click.option("--collection", default=None, help="The name of the collection to get.")
+@click.pass_context
+def get_collection_cli(ctx, collection):
+    """Get all collections in Weaviate. If --collection is provided, get the specific collection."""
+    
+    # Access the general arguments from the context object
+    host = ctx.obj['host']
+    api_key = ctx.obj['api_key']
+    port = ctx.obj['port']
+    
+    # Call the function from get_collections.py with general arguments
+    get_collection(
+        host=host,
+        api_key=api_key,
+        port=port,
+        collection=collection
+    )
+
+@get.command("tenants")
+@click.option("--collection", default="Movies", help="The name of the collection to get tenants from.")
+@click.option("--verbose", is_flag=True, help="Print verbose output.")
+@click.pass_context
+def get_tenants_cli(ctx, collection,verbose):
+    """Get tenants from a collection in Weaviate."""
+    
+    # Access the general arguments from the context object
+    host = ctx.obj['host']
+    api_key = ctx.obj['api_key']
+    port = ctx.obj['port']
+    
+    # Call the function from get_tenants.py with general and specific arguments
+    get_tenants(
+        host=host,
+        api_key=api_key,
+        port=port,
+        collection=collection,
+        verbose=verbose
     )
 
 if __name__ == "__main__":

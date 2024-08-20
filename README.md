@@ -8,20 +8,20 @@ The Weaviatest CLI provides the following actions:
 
 ### Create
 
-- Create a class: `weaviatest.py create class --collection <collection> --multitenant --vector_index <vector_index> --replication_factor <replication_factor>`
+- Create a collection: `weaviatest.py create collection --collection <collection> --multitenant --vector_index <vector_index> --replication_factor <replication_factor>`
 - Create data: `weaviatest.py create data --collection <collection> --limit <limit> --consistency_level <consistency_level> --randomize`
 - Create tenants: `weaviatest.py create tenants --collection <collection> --number_tenants <number_tenants>`
 - Create backup: `weaviatest.py create backup --backup_id <backup_id>`
 
 ### Update
 
-- Update class: `weaviatest.py update class --collection <collection> --new_collection <new_collection>`
+- Update collection: `weaviatest.py update collection --collection <collection> --new_collection <new_collection>`
 - Update tenants: `weaviatest.py update tenants --collection <collection> --number_tenants <number_tenants> --state <state>`
 - Update data: `weaviatest.py update data --collection <collection> --limit <limit> --consistency_level <consistency_level>`
 
 ### Delete
 
-- Delete class: `weaviatest.py delete class --collection <collection>`
+- Delete collection: `weaviatest.py delete collection --collection <collection>`
 - Delete data: `weaviatest.py delete data --collection <collection>`
 - Delete tenants: `weaviatest.py delete tenants --collection <collection> --number_tenants <number_tenants>`
 
@@ -59,10 +59,10 @@ pip install -r requirements.txt
 
 Here are some examples of how to use the Weaviatest CLI:
 
-1. Create a multitenant class named `Films` with an RF of 3 and an HNSW vector index with PQ enabled (without a vectorizer). Then, add 100 tenants, add 100 objects per tenant with a consistency level of ONE, update all 100 tenants from HOT to COLD, delete 50 tenants, perform a backup, move all remaining tenants back to HOT, update 50 objects for each tenant with a consistency level of ALL, delete the class, and restore the backup:
+1. Create a multitenant collection named `Films` with an RF of 3 and an HNSW vector index with PQ enabled (without a vectorizer). Then, add 100 tenants, add 100 objects per tenant with a consistency level of ONE, update all 100 tenants from HOT to COLD, delete 50 tenants, perform a backup, move all remaining tenants back to HOT, update 50 objects for each tenant with a consistency level of ALL, delete the collection, and restore the backup:
 
 ```
-weaviatest.py create class --collection "Films" --multitenant --vector_index hnsw_pq --replication_factor 3
+weaviatest.py create collection --collection "Films" --multitenant --vector_index hnsw_pq --replication_factor 3
 weaviatest.py create tenants --collection "Films" --number_tenants 100
 weaviatest.py create data --collection "Films" --limit 100 --consistency_level one --randomize
 weaviatest.py update tenants --collection "Films" --number_tenants 100 --state cold
@@ -70,7 +70,7 @@ weaviatest.py delete tenants --collection "Films" --number_tenants 50
 weaviatest.py create backup --backup_id "my-films-backup" --wait
 weaviatest.py update tenants --collection "Films" --number_tenants 50 --state hot
 weaviatest.py update data --collection "Films" --limit 50 --consistency_level all
-weaviatest.py delete class --collection "Films"
+weaviatest.py delete collection --collection "Films"
 weaviatest.py restore backup --backup_id "my-films-backup" --wait
 ```
 
@@ -94,15 +94,15 @@ To run the Weaviatest CLI application using Docker, follow these steps:
 
 1. Open a terminal.
 
-2. Run the following command to create a class using the Weaviatest CLI:
+2. Run the following command to create a collection using the Weaviatest CLI:
 
     ```
-    docker run weaviatest create class --collection <collection> --multitenant --vector_index <vector_index> --replication_factor <replication_factor>
+    docker run weaviatest create collection --collection <collection> --multitenant --vector_index <vector_index> --replication_factor <replication_factor>
     ```
 
-    Replace `<collection>`, `<vector_index>`, and `<replication_factor>` with the desired values for your class.
+    Replace `<collection>`, `<vector_index>`, and `<replication_factor>` with the desired values for your collection.
 
-    You can use similar commands to run other actions provided by the Weaviatest CLI. Just replace `create class` with the desired action and provide the required parameters.
+    You can use similar commands to run other actions provided by the Weaviatest CLI. Just replace `create collection` with the desired action and provide the required parameters.
 
     For example, to create data, use the following command:
 
