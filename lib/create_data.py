@@ -83,11 +83,17 @@ def __ingest_data(collection, num_objects, cl, randomize):
         counter = 0
         data_objects = __generate_data_object(num_objects)
         cl_collection = collection.with_consistency_level(cl)
+        vectorizer = cl_collection.config.get().vectorizer
+        dimensions = 1536
+        if vectorizer == "text2vec-contextionary":
+            dimensions = 300
+        elif vectorizer == "text2vec-transformers":
+            dimensions = 768
         with cl_collection.batch.dynamic() as batch:
             for obj in data_objects:
                 batch.add_object(
                     properties=obj,
-                    vector={"default": np.random.rand(1, 1536)[0].tolist()},
+                    vector=np.random.rand(1, dimensions)[0].tolist(),
                 )
                 counter += 1
 
