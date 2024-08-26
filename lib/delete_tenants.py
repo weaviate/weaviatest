@@ -9,32 +9,35 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     client = common.connect_to_weaviate(host, api_key, port)
     version = semver.Version.parse(client.get_meta()["version"])
     if not client.collections.exists(collection):
-        print(
+        client.close()
+        raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command"
         )
-        return
 
     collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
-        print(
+        client.close()
+        raise Exception(
             f"Collection '{collection.name}' does not have multi-tenancy enabled. Recreate or modify the class with <create class> command"
         )
-        return
 
     total_tenants = len(collection.tenants.get())
     try:
+        if total_tenants == 0:
+            client.close()
+            raise Exception(f"No tenants present in class {collection.name}.")
         # get_by_names is only available after 1.25.0
         if version.compare(semver.Version.parse("1.25.0")) < 0:
             tenants_list = {
-                    name: tenant
-                    for name, tenant in collection.tenants.get().items()
-                    if name.startswith(tenant_suffix)
-                }
+                name: tenant
+                for name, tenant in collection.tenants.get().items()
+                if name.startswith(tenant_suffix)
+            }
             deleting_tenants = {
                 name: tenant
                 for name, tenant in tenants_list.items()
-                if int(name[len(tenant_suffix):]) < number_tenants
+                if int(name[len(tenant_suffix) :]) < number_tenants
             }
         else:
             deleting_tenants = collection.tenants.get_by_names(
@@ -48,14 +51,15 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
                 ]
             )
         if not deleting_tenants:
-            print(f"No tenants present in class {collection.name}.")
+            client.close()
+            raise Exception(f"No tenants present in class {collection.name}.")
         else:
             for name, tenant in deleting_tenants.items():
                 collection.tenants.remove(Tenant(name=name))
 
     except Exception as e:
-        print(f"Failed to delete tenants: {e}")
         client.close()
+        raise Exception(f"Failed to delete tenants: {e}")
 
     tenants_list = collection.tenants.get()
     assert (
@@ -65,4 +69,3 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     print(f"{number_tenants} tenants deleted")
 
     client.close()
-

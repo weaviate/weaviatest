@@ -38,7 +38,7 @@ def __update_data(collection, num_objects, cl, randomize):
             print(
                 f"No objects found in class '{collection.name}'. Insert objects first using ./ingest_data.py"
             )
-            return
+            return -1
         data_objects = res.objects
         for obj in data_objects:
             res = collection.with_consistency_level(cl).data.replace(
@@ -46,15 +46,19 @@ def __update_data(collection, num_objects, cl, randomize):
                 properties=__update_data_object(),
                 vector={"default": np.random.rand(1, 1536)[0].tolist()},
             )
-
-        print(f"Updated {num_objects} objects into class '{collection.name}'")
+        found_objects = len(data_objects)
+        assert (
+            found_objects == num_objects
+        ), f"Found {found_objects} objects, expected {num_objects}"
+        print(f"Updated {found_objects} objects into class '{collection.name}'")
+        return found_objects
     else:
         res = collection.query.fetch_objects(limit=num_objects)
         if len(res.objects) == 0:
             print(
                 f"No objects found in class '{collection.name}'. Insert objects first using ./ingest_data.py"
             )
-            return
+            return -1
         data_objects = res.objects
         for obj in data_objects:
             for property, value in obj.properties.items():
@@ -70,17 +74,22 @@ def __update_data(collection, num_objects, cl, randomize):
                 uuid=obj.uuid,
                 properties=obj.properties,
             )
+        found_objects = len(data_objects)
+        assert (
+            found_objects == num_objects
+        ), f"Found {found_objects} objects, expected {num_objects}"
         print(f"Updated {num_objects} objects into class '{collection.name}'")
+        return found_objects
 
 
 def update_data(host, api_key, port, collection, limit, consistency_level, randomize):
 
     client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        print(
+        client.close()
+        raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using ./create_class.py"
         )
-        return
 
     collection = client.collections.get(collection)
     try:
@@ -101,7 +110,7 @@ def update_data(host, api_key, port, collection, limit, consistency_level, rando
 
     for tenant in tenants:
         if tenant == "None":
-            __update_data(
+            ret = __update_data(
                 collection,
                 limit,
                 cl_map[consistency_level],
@@ -109,12 +118,16 @@ def update_data(host, api_key, port, collection, limit, consistency_level, rando
             )
         else:
             print(f"Processing tenant '{tenant}'")
-            __update_data(
+            ret = __update_data(
                 collection.with_tenant(tenant),
                 limit,
                 cl_map[consistency_level],
                 randomize,
             )
+        if ret == -1:
+            client.close()
+            raise Exception(
+                f"Failed to update objects in class '{collection.name}' for tenant '{tenant}'"
+            )
 
     client.close()
-

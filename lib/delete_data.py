@@ -10,13 +10,14 @@ def __delete_data(collection, num_objects, cl):
         print(
             f"No objects found in class '{collection.name}'. Insert objects first using <ingest data> command"
         )
-        return
+        return -1
     data_objects = res.objects
 
     for obj in data_objects:
         collection.with_consistency_level(cl).data.delete_by_id(uuid=obj.uuid)
 
     print(f"Deleted {num_objects} objects into class '{collection.name}'")
+    return num_objects
 
 
 def delete_data(host, api_key, port, collection, limit, consistency_level):
@@ -27,7 +28,7 @@ def delete_data(host, api_key, port, collection, limit, consistency_level):
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command."
         )
         client.close()
-        return
+        return 1
 
     collection = client.collections.get(collection)
     try:
@@ -48,14 +49,18 @@ def delete_data(host, api_key, port, collection, limit, consistency_level):
 
     for tenant in tenants:
         if tenant == "None":
-            __delete_data(collection, limit, cl_map[consistency_level])
+            ret = __delete_data(collection, limit, cl_map[consistency_level])
         else:
             print(f"Processing tenant '{tenant}'")
-            __delete_data(
+            ret = __delete_data(
                 collection.with_tenant(tenant),
                 limit,
                 cl_map[consistency_level],
             )
+        if ret == -1:
+            client.close()
+            raise Exception(
+                f"Failed to delete objects in class '{collection.name}' for tenant '{tenant}'"
+            )
 
     client.close()
-

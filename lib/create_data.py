@@ -40,12 +40,15 @@ def __import_json(collection, file_name, cl, num_objects=None):
                     print(
                         f"Failed to add object with UUID {failed_object.original_uuid}: {failed_object.message}"
                     )
+                return -1
+
             expected = len(data[:num_objects]) if num_objects else len(data)
             assert (
                 counter == expected
             ), f"Expected {expected} objects, but added {counter} objects."
     else:
         print(f"File '{file_name}' does not exist or is not a file.")
+        return -1
     print(f"Finished processing {counter} objects.")
     return counter
 
@@ -102,20 +105,25 @@ def __ingest_data(collection, num_objects, cl, randomize):
                 print(
                     f"Failed to add object with UUID {failed_object.original_uuid}: {failed_object.message}"
                 )
+            return -1
         print(f"Inserted {counter} objects into class '{collection.name}'")
+        return counter
     else:
         num_objects_inserted = __import_json(collection, "movies.json", cl, num_objects)
         print(f"Inserted {num_objects_inserted} objects into class '{collection.name}'")
+        return num_objects_inserted
 
 
-def ingest_data(host, api_key, port, collection, limit, consistency_level, randomize, auto_tenants):
+def ingest_data(
+    host, api_key, port, collection, limit, consistency_level, randomize, auto_tenants
+):
 
     client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        print(
+        client.close()
+        raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command"
         )
-        return
 
     collection = client.collections.get(collection)
     try:
@@ -131,10 +139,10 @@ def ingest_data(host, api_key, port, collection, limit, consistency_level, rando
         auto_tenants > 0
         and collection.config.get().multi_tenancy_config.auto_tenant_creation == False
     ):
-        print(
+        client.close()
+        raise Exception(
             f"Auto tenant creation is not enabled for class '{collection.name}'. Please enable it using <update class> command"
         )
-        return
 
     cl_map = {
         "quorum": wvc.ConsistencyLevel.QUORUM,
@@ -147,13 +155,12 @@ def ingest_data(host, api_key, port, collection, limit, consistency_level, rando
         else:
             if len(tenants) < auto_tenants:
                 tenants += [
-                    f"Tenant--{i}"
-                    for i in range(len(tenants) + 1, auto_tenants + 1)
+                    f"Tenant--{i}" for i in range(len(tenants) + 1, auto_tenants + 1)
                 ]
 
     for tenant in tenants:
         if tenant == "None":
-            __ingest_data(
+            ret = __ingest_data(
                 collection,
                 limit,
                 cl_map[consistency_level],
@@ -161,12 +168,16 @@ def ingest_data(host, api_key, port, collection, limit, consistency_level, rando
             )
         else:
             print(f"Processing tenant '{tenant}'")
-            __ingest_data(
+            ret = __ingest_data(
                 collection.with_tenant(tenant),
                 limit,
                 cl_map[consistency_level],
                 randomize,
             )
 
+        if ret == -1:
+            client.close()
+            raise Exception(
+                f"Error occurred while ingesting data for tenant '{tenant}'."
+            )
     client.close()
-

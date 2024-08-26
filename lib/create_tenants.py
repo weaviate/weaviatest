@@ -1,30 +1,29 @@
-import lib.common as common
 import semver
-import weaviate.classes.config as wvc
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
+import lib.common as common
+import weaviate.classes.config as wvc
 
-def create_tenants(host, api_key,port,
-                   collection,tenant_suffix, number_tenants, state):
 
+def create_tenants(
+    host, api_key, port, collection, tenant_suffix, number_tenants, state
+):
     client = common.connect_to_weaviate(host, api_key, port)
-    
+
     if not client.collections.exists(collection):
-        print(
+        client.close()
+        raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class>"
         )
-        client.close()
-        return
 
     version = semver.Version.parse(client.get_meta()["version"])
     collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
-        print(
+        client.close()
+        raise Exception(
             f"Collection '{collection.name}' does not have multi-tenancy enabled. Recreate or modify the class with: <create class>"
         )
-        client.close()
-        return
 
     tenant_state_map = {
         "hot": TenantActivityStatus.HOT,
@@ -35,29 +34,22 @@ def create_tenants(host, api_key,port,
         "offloaded": TenantActivityStatus.OFFLOADED,
     }
 
-    try:
-        existing_tenants = collection.tenants.get()
-        if existing_tenants:
-            client.close()
-            print(
-                f"Tenants already exist in class '{collection.name}'. Update their status using ./update_tenants.py or delete them using <delete tenants> command"
-            )
-            client.close()
-            return
-        else:
-            collection.tenants.create(
-                [
-                    Tenant(
-                        name=f"{tenant_suffix}{i}",
-                        activity_status=tenant_state_map[state],
-                    )
-                    for i in range(number_tenants)
-                ]
-            )
-
-    except Exception as e:
-        print(f"Failed to create tenants: {e}")
+    existing_tenants = collection.tenants.get()
+    if existing_tenants:
         client.close()
+        raise Exception(
+            f"Tenants already exist in class '{collection.name}'. Update their status using ./update_tenants.py or delete them using <delete tenants> command"
+        )
+    else:
+        collection.tenants.create(
+            [
+                Tenant(
+                    name=f"{tenant_suffix}{i}",
+                    activity_status=tenant_state_map[state],
+                )
+                for i in range(number_tenants)
+            ]
+        )
 
     # get_by_names is only available after 1.25.0
     if version.compare(semver.Version.parse("1.25.0")) < 0:
@@ -75,7 +67,8 @@ def create_tenants(host, api_key,port,
     ), f"Expected {number_tenants} tenants, but found {len(tenants_list)}"
     for tenant in tenants_list.values():
         if tenant.activity_status != tenant_state_map[state]:
-            print(
+            client.close()
+            raise Exception(
                 f"Tenant '{tenant.name}' has activity status '{tenant.activity_status}', but expected '{tenant_state_map[state]}'"
             )
     print(
@@ -83,4 +76,3 @@ def create_tenants(host, api_key,port,
     )
 
     client.close()
-

@@ -4,25 +4,26 @@ import weaviate.classes.config as wvc
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
 
-def update_tenants(host, api_key, port, collection, tenant_suffix, number_tenants, state):
+def update_tenants(
+    host, api_key, port, collection, tenant_suffix, number_tenants, state
+):
 
     # Connect to Weaviate instance
     client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        print(
+        client.close()
+        raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using ./create_class.py"
         )
-        client.close()
-        return
 
     version = semver.Version.parse(client.get_meta()["version"])
     collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
-        print(
+        client.close()
+        raise Exception(
             f"Collection '{collection.name}' does not have multi-tenancy enabled. Recreate or modify the class with ./create_class.py"
         )
-        return
 
     tenant_state_map = {
         "hot": TenantActivityStatus.HOT,
@@ -32,7 +33,7 @@ def update_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
         "frozen": TenantActivityStatus.FROZEN,
         "offloaded": TenantActivityStatus.OFFLOADED,
     }
-    
+
     equivalent_state_map = {
         "hot": TenantActivityStatus.ACTIVE,
         "active": TenantActivityStatus.ACTIVE,
@@ -49,24 +50,19 @@ def update_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     }
 
     if len(tenants_with_suffix) < number_tenants:
-        print(
-            f"Not enough tenants present in class {collection.name} with suffix {tenant_suffix}. Expected {number_tenants}, found {len(existing_tenants)}."
+        client.close()
+        raise Exception(
+            f"Not enough tenants present in class {collection.name} with suffix {tenant_suffix}. Expected {number_tenants}, found {len(tenants_with_suffix)}."
         )
-        client.close()
-        return
 
-    existing_tenants = dict(list(tenants_with_suffix.items())[: number_tenants])
-    try:
-        for name, tenant in existing_tenants.items():
-            collection.tenants.update(
-                Tenant(name=name, activity_status=tenant_state_map[state])
-                if tenant.activity_status != tenant_state_map[state]
-                else tenant
-            )
+    existing_tenants = dict(list(tenants_with_suffix.items())[:number_tenants])
 
-    except Exception as e:
-        print(f"Failed to create tenants: {e}")
-        client.close()
+    for name, tenant in existing_tenants.items():
+        collection.tenants.update(
+            Tenant(name=name, activity_status=tenant_state_map[state])
+            if tenant.activity_status != tenant_state_map[state]
+            else tenant
+        )
 
     # get_by_names is only available after 1.25.0
     if version.compare(semver.Version.parse("1.25.0")) < 0:
@@ -85,7 +81,8 @@ def update_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     ), f"Expected {number_tenants} tenants, but found {len(tenants_list)}"
     for tenant in tenants_list.values():
         if tenant.activity_status != equivalent_state_map[state]:
-            print(
+            client.close()
+            raise Exception(
                 f"Tenant '{tenant.name}' has activity status '{tenant.activity_status}', but expected '{tenant_state_map[state]}'"
             )
     print(
@@ -93,4 +90,3 @@ def update_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     )
 
     client.close()
-
