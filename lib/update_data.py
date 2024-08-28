@@ -1,10 +1,8 @@
 import lib.common as common
 import numpy as np
-import string
 import random
 import weaviate.classes.config as wvc
 from datetime import datetime, timedelta
-import os
 
 
 def __update_data_object():
@@ -82,11 +80,10 @@ def __update_data(collection, num_objects, cl, randomize):
         return found_objects
 
 
-def update_data(host, api_key, port, collection, limit, consistency_level, randomize):
+def update_data(client, collection, limit, consistency_level, randomize):
 
-    client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using ./create_class.py"
         )
@@ -125,9 +122,7 @@ def update_data(host, api_key, port, collection, limit, consistency_level, rando
                 randomize,
             )
         if ret == -1:
-            client.close()
+
             raise Exception(
                 f"Failed to update objects in class '{collection.name}' for tenant '{tenant}'"
             )
-
-    client.close()

@@ -23,10 +23,12 @@ def get_host():
         return "localhost"  # Default fallback (Linux or unreachable)
 
 
-def connect_to_weaviate(host, api_key, port):
+def connect_to_weaviate(host, api_key, port, grpc_port):
     # Connect to Weaviate instance
     if host == "localhost":
-        client = weaviate.connect_to_local(host=get_host(), port=port)
+        client = weaviate.connect_to_local(
+            host=get_host(), port=port, grpc_port=grpc_port
+        )
     else:
         client = weaviate.connect_to_wcs(
             cluster_url=host,

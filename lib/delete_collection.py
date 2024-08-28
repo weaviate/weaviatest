@@ -1,21 +1,21 @@
-import lib.common as common
+def delete_collection(client, collection, all):
 
-
-def delete_collection(host, api_key, port, collection):
-
-    client = common.connect_to_weaviate(host, api_key, port)
-
-    if client.collections.exists(collection):
-        try:
+    if all:
+        collections = client.collections.list_all()
+        for collection in collections:
+            print(f"Deleting collection '{collection}'")
             client.collections.delete(collection)
-        except Exception as e:
-            client.close()
-            raise Exception(
-                f"Failed to delete collection '{collection}' in Weaviate.: {e}"
-            )
+        print(f"All collections deleted successfully in Weaviate.")
+    else:
+        if client.collections.exists(collection):
+            try:
+                client.collections.delete(collection)
+            except Exception as e:
 
-    assert not client.collections.exists(collection)
+                raise Exception(
+                    f"Failed to delete collection '{collection}' in Weaviate.: {e}"
+                )
 
-    print(f"Collection '{collection}' deleted successfully in Weaviate.")
+        assert not client.collections.exists(collection)
 
-    client.close()
+        print(f"Collection '{collection}' deleted successfully in Weaviate.")

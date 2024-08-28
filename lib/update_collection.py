@@ -1,11 +1,8 @@
-import lib.common as common
 import weaviate.classes.config as wvc
 
 
 def update_collection(
-    host,
-    api_key,
-    port,
+    client,
     collection,
     description,
     vector_index,
@@ -15,9 +12,8 @@ def update_collection(
     auto_tenant_activation,
 ):
 
-    client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Collection '{collection}' does not exist in Weaviate. Create first using ./create_collection.py"
         )
@@ -78,5 +74,3 @@ def update_collection(
     assert client.collections.exists(collection)
 
     print(f"Collection '{collection}' modified successfully in Weaviate.")
-
-    client.close()

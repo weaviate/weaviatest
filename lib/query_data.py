@@ -1,5 +1,4 @@
 import lib.common as common
-import numpy as np
 import weaviate.classes.config as wvc
 from weaviate.classes.query import MetadataQuery
 from weaviate.collections.classes.tenants import TenantActivityStatus
@@ -52,13 +51,10 @@ def __query_data(collection, num_objects, cl, search_type, query):
     return num_objects
 
 
-def query_data(
-    host, api_key, port, collection, search_type, query, consistency_level, limit
-):
+def query_data(client, collection, search_type, query, consistency_level, limit):
 
-    client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command."
         )
@@ -103,8 +99,7 @@ def query_data(
                 query,
             )
         if ret == -1:
-            client.close()
+
             raise Exception(
                 f"Failed to query objects in class '{collection.name}' for tenant '{tenant}'"
             )
-    client.close()

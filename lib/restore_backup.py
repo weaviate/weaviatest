@@ -2,9 +2,7 @@ import lib.common as common
 import weaviate.classes.config as wvc
 
 
-def restore_backup(host, api_key, port, backup_id, backend, include, exclude, wait):
-
-    client = common.connect_to_weaviate(host, api_key, port)
+def restore_backup(client, backup_id, backend, include, exclude, wait):
 
     result = client.backup.restore(
         backup_id=backup_id,

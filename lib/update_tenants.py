@@ -1,17 +1,11 @@
-import lib.common as common
 import semver
-import weaviate.classes.config as wvc
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
 
-def update_tenants(
-    host, api_key, port, collection, tenant_suffix, number_tenants, state
-):
+def update_tenants(client, collection, tenant_suffix, number_tenants, state):
 
-    # Connect to Weaviate instance
-    client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using ./create_class.py"
         )
@@ -20,7 +14,7 @@ def update_tenants(
     collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
-        client.close()
+
         raise Exception(
             f"Collection '{collection.name}' does not have multi-tenancy enabled. Recreate or modify the class with ./create_class.py"
         )
@@ -50,7 +44,7 @@ def update_tenants(
     }
 
     if len(tenants_with_suffix) < number_tenants:
-        client.close()
+
         raise Exception(
             f"Not enough tenants present in class {collection.name} with suffix {tenant_suffix}. Expected {number_tenants}, found {len(tenants_with_suffix)}."
         )
@@ -81,12 +75,10 @@ def update_tenants(
     ), f"Expected {number_tenants} tenants, but found {len(tenants_list)}"
     for tenant in tenants_list.values():
         if tenant.activity_status != equivalent_state_map[state]:
-            client.close()
+
             raise Exception(
                 f"Tenant '{tenant.name}' has activity status '{tenant.activity_status}', but expected '{tenant_state_map[state]}'"
             )
     print(
         f"{len(tenants_list)} tenants updated with tenant status '{tenant.activity_status}' for class '{collection.name}'."
     )
-
-    client.close()

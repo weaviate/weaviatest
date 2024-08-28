@@ -1,17 +1,13 @@
 import semver
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
-import lib.common as common
 import weaviate.classes.config as wvc
 
 
-def create_tenants(
-    host, api_key, port, collection, tenant_suffix, number_tenants, state
-):
-    client = common.connect_to_weaviate(host, api_key, port)
+def create_tenants(client, collection, tenant_suffix, number_tenants, state):
 
     if not client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class>"
         )
@@ -20,7 +16,7 @@ def create_tenants(
     collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
-        client.close()
+
         raise Exception(
             f"Collection '{collection.name}' does not have multi-tenancy enabled. Recreate or modify the class with: <create class>"
         )
@@ -36,7 +32,7 @@ def create_tenants(
 
     existing_tenants = collection.tenants.get()
     if existing_tenants:
-        client.close()
+
         raise Exception(
             f"Tenants already exist in class '{collection.name}'. Update their status using ./update_tenants.py or delete them using <delete tenants> command"
         )
@@ -67,12 +63,10 @@ def create_tenants(
     ), f"Expected {number_tenants} tenants, but found {len(tenants_list)}"
     for tenant in tenants_list.values():
         if tenant.activity_status != tenant_state_map[state]:
-            client.close()
+
             raise Exception(
                 f"Tenant '{tenant.name}' has activity status '{tenant.activity_status}', but expected '{tenant_state_map[state]}'"
             )
     print(
         f"{len(tenants_list)} tenants added with tenant status '{tenant.activity_status}' for collection '{collection.name}'"
     )
-
-    client.close()

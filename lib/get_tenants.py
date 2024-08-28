@@ -1,9 +1,7 @@
-import lib.common as common
 from weaviate.collections.classes.tenants import TenantActivityStatus
 
 
-def get_tenants(host, api_key, port, collection, verbose):
-    client = common.connect_to_weaviate(host, api_key, port)
+def get_tenants(client, collection, verbose):
     tenants = client.collections.get(collection).tenants.get()
 
     if verbose:
@@ -33,5 +31,3 @@ def get_tenants(host, api_key, port, collection, verbose):
         print(
             f"{len(tenants):<20}{len(inactive_tenants):<20}{len(active_tenants):<20}{len(offoaded_tenants):<20}"
         )
-
-    client.close()

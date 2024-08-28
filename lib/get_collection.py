@@ -1,5 +1,4 @@
 import json
-import lib.common as common
 from weaviate.collections.classes.tenants import TenantActivityStatus
 
 
@@ -14,11 +13,11 @@ def __get_total_objects_with_multitenant(col_obj):
     return acc
 
 
-def get_collection(host, api_key, port, collection):
-    client = common.connect_to_weaviate(host, api_key, port)
+def get_collection(client, collection):
+
     if collection != None:
         if not client.collections.exists(collection):
-            client.close()
+
             raise Exception(f"Collection '{collection}' does not exist")
         col_obj = client.collections.get(collection)
         # Pretty print the dict structure
@@ -36,4 +35,3 @@ def get_collection(host, api_key, port, collection):
             )
         print(f"{'':<30}{'':<16}{'':<16}{'':<16}{'':<20}{'':<16}{'':<16}")
         print(f"Total: {len(all_collections)} collections")
-    client.close()

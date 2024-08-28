@@ -16,6 +16,7 @@ from lib.query_data import query_data
 from lib.restore_backup import restore_backup
 from lib.get_collection import get_collection
 from lib.get_tenants import get_tenants
+from lib.common import connect_to_weaviate
 
 
 # General CLI group for Weaviate operations
@@ -25,8 +26,9 @@ from lib.get_tenants import get_tenants
 )
 @click.option("--api_key", default=None, help="Weaviate API key (default: None).")
 @click.option("--port", default=8080, help="Weaviate port (default: 8080).")
+@click.option("--grpc-port", default=50051, help="Weaviate grpc port (default: 50051)")
 @click.pass_context
-def cli(ctx, host, api_key, port):
+def cli(ctx, host, api_key, port, grpc_port):
     """
     Weaviate CLI for managing collectiones, tenants, and data.
     """
@@ -35,6 +37,7 @@ def cli(ctx, host, api_key, port):
     ctx.obj["host"] = host
     ctx.obj["api_key"] = api_key
     ctx.obj["port"] = port
+    ctx.obj["grpc_port"] = grpc_port
 
 
 # Create Group
@@ -139,13 +142,13 @@ def create_collection_cli(
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from create_collection.py passing both general and specific arguments
         create_collection(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             replication_factor=replication_factor,
             async_enabled=async_enabled,
@@ -160,7 +163,9 @@ def create_collection_cli(
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+    client.close()
 
 
 # Subcommand to ingest data
@@ -181,7 +186,9 @@ def create_collection_cli(
 )
 @click.option("--randomize", is_flag=True, help="Randomize the data (default: False).")
 @click.option(
-    "--auto_tenants", is_flag=True, help="Enable auto tenants (default: False)."
+    "--auto_tenants",
+    default=0,
+    help="Number of tenants for which we will send data. NOTE: Requires class with --auto_tenant_creation (default: 0).",
 )
 @click.pass_context
 def create_data_cli(ctx, collection, limit, consistency_level, randomize, auto_tenants):
@@ -191,13 +198,13 @@ def create_data_cli(ctx, collection, limit, consistency_level, randomize, auto_t
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from ingest_data.py with general and specific arguments
         ingest_data(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             limit=limit,
             consistency_level=consistency_level,
@@ -206,7 +213,9 @@ def create_data_cli(ctx, collection, limit, consistency_level, randomize, auto_t
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+    client.close()
 
 
 # Subcommand to create tenants (without --vectorizer option)
@@ -235,13 +244,13 @@ def create_tenants_cli(ctx, collection, tenant_suffix, number_tenants, state):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from create_tenants.py with general and specific arguments
         create_tenants(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             tenant_suffix=tenant_suffix,
             number_tenants=number_tenants,
@@ -249,7 +258,9 @@ def create_tenants_cli(ctx, collection, tenant_suffix, number_tenants, state):
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+    client.close()
 
 
 @create.command("backup")
@@ -290,13 +301,13 @@ def create_backup_cli(ctx, backend, backup_id, include, exclude, wait, cpu_for_b
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
-    # Call the function from create_backup.py with general and specific arguments
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
+        # Call the function from create_backup.py with general and specific arguments
         create_backup(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             backend=backend,
             backup_id=backup_id,
             include=include,
@@ -306,28 +317,36 @@ def create_backup_cli(ctx, backend, backup_id, include, exclude, wait, cpu_for_b
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+    client.close()
 
 
 @delete.command("collection")
 @click.option(
     "--collection", default="Movies", help="The name of the collection to delete."
 )
+@click.option("--all", is_flag=True, help="Delete all collections (default: False).")
 @click.pass_context
-def delete_collection_cli(ctx, collection):
+def delete_collection_cli(ctx, collection, all):
     """Delete a collection in Weaviate."""
 
     # Access the general arguments from the context object
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from delete_collection.py with general and specific arguments
-        delete_collection(host=host, api_key=api_key, port=port, collection=collection)
+        delete_collection(client=client, collection=collection, all=all)
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @delete.command("data")
@@ -353,20 +372,22 @@ def delete_data_cli(ctx, collection, limit, consistency_level):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from delete_data.py with general and specific arguments
         delete_data(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             limit=limit,
             consistency_level=consistency_level,
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+    client.close()
 
 
 @delete.command("tenants")
@@ -391,20 +412,23 @@ def delete_tenants_cli(ctx, collection, tenant_suffix, number_tenants):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from delete_tenants.py with general and specific arguments
         delete_tenants(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             tenant_suffix=tenant_suffix,
             number_tenants=number_tenants,
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @update.command("collection")
@@ -457,13 +481,13 @@ def update_collection_cli(
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from update_collection.py with general and specific arguments
         update_collection(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             async_enabled=async_enabled,
             vector_index=vector_index,
@@ -474,7 +498,10 @@ def update_collection_cli(
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @update.command("data")
@@ -499,13 +526,13 @@ def update_data_cli(ctx, collection, limit, consistency_level, randomize):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from update_data.py with general and specific arguments
         update_data(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             limit=limit,
             consistency_level=consistency_level,
@@ -513,7 +540,10 @@ def update_data_cli(ctx, collection, limit, consistency_level, randomize):
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @update.command("tenants")
@@ -541,13 +571,13 @@ def update_tenants_cli(ctx, collection, tenant_suffix, number_tenants, state):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from update_tenants.py with general and specific arguments
         update_tenants(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             tenant_suffix=tenant_suffix,
             number_tenants=number_tenants,
@@ -555,7 +585,10 @@ def update_tenants_cli(ctx, collection, tenant_suffix, number_tenants, state):
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @restore.command("backup")
@@ -581,20 +614,23 @@ def restore_backup_cli(ctx, backend, backup_id, wait):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from restore_backup.py with general and specific arguments
         restore_backup(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             backend=backend,
             backup_id=backup_id,
             wait=wait,
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @query.command("data")
@@ -627,13 +663,13 @@ def query_data_cli(ctx, collection, search_type, query, consistency_level, limit
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from query_data.py with general and specific arguments
         query_data(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             search_type=search_type,
             query=query,
@@ -642,7 +678,10 @@ def query_data_cli(ctx, collection, search_type, query, consistency_level, limit
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @get.command("collection")
@@ -655,13 +694,18 @@ def get_collection_cli(ctx, collection):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from get_collections.py with general arguments
-        get_collection(host=host, api_key=api_key, port=port, collection=collection)
+        get_collection(client=client, collection=collection)
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 @get.command("tenants")
@@ -679,19 +723,22 @@ def get_tenants_cli(ctx, collection, verbose):
     host = ctx.obj["host"]
     api_key = ctx.obj["api_key"]
     port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
 
     try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
         # Call the function from get_tenants.py with general and specific arguments
         get_tenants(
-            host=host,
-            api_key=api_key,
-            port=port,
+            client=client,
             collection=collection,
             verbose=verbose,
         )
     except Exception as e:
         print(f"Error: {e}")
+        client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
+
+    client.close()
 
 
 if __name__ == "__main__":

@@ -1,11 +1,8 @@
 import weaviate.classes.config as wvc
-import lib.common as common
 
 
 def create_collection(
-    host,
-    api_key,
-    port,
+    client,
     collection,
     replication_factor,
     async_enabled,
@@ -19,10 +16,8 @@ def create_collection(
     vectorizer,
 ):
 
-    client = common.connect_to_weaviate(host, api_key, port)
-
     if client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Error: Collection '{collection}' already exists in Weaviate. Delete using <delete collection> command."
         )
@@ -105,11 +100,9 @@ def create_collection(
             properties=properties if auto_schema else None,
         )
     except Exception as e:
-        client.close()
+
         raise Exception(f"Error creating Collection '{collection}': {e}")
 
     assert client.collections.exists(collection)
 
     print(f"Collection '{collection}' created successfully in Weaviate.")
-
-    client.close()

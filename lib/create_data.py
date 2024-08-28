@@ -114,13 +114,10 @@ def __ingest_data(collection, num_objects, cl, randomize):
         return num_objects_inserted
 
 
-def ingest_data(
-    host, api_key, port, collection, limit, consistency_level, randomize, auto_tenants
-):
+def ingest_data(client, collection, limit, consistency_level, randomize, auto_tenants):
 
-    client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command"
         )
@@ -139,7 +136,7 @@ def ingest_data(
         auto_tenants > 0
         and collection.config.get().multi_tenancy_config.auto_tenant_creation == False
     ):
-        client.close()
+
         raise Exception(
             f"Auto tenant creation is not enabled for class '{collection.name}'. Please enable it using <update class> command"
         )
@@ -176,8 +173,7 @@ def ingest_data(
             )
 
         if ret == -1:
-            client.close()
+
             raise Exception(
                 f"Error occurred while ingesting data for tenant '{tenant}'."
             )
-    client.close()

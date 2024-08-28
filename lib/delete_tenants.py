@@ -1,6 +1,5 @@
 import lib.common as common
 import semver
-import weaviate.classes.config as wvc
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
 
@@ -9,7 +8,7 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     client = common.connect_to_weaviate(host, api_key, port)
     version = semver.Version.parse(client.get_meta()["version"])
     if not client.collections.exists(collection):
-        client.close()
+
         raise Exception(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command"
         )
@@ -17,7 +16,7 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     collection = client.collections.get(collection)
 
     if not collection.config.get().multi_tenancy_config.enabled:
-        client.close()
+
         raise Exception(
             f"Collection '{collection.name}' does not have multi-tenancy enabled. Recreate or modify the class with <create class> command"
         )
@@ -25,7 +24,7 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     total_tenants = len(collection.tenants.get())
     try:
         if total_tenants == 0:
-            client.close()
+
             raise Exception(f"No tenants present in class {collection.name}.")
         # get_by_names is only available after 1.25.0
         if version.compare(semver.Version.parse("1.25.0")) < 0:
@@ -51,14 +50,14 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
                 ]
             )
         if not deleting_tenants:
-            client.close()
+
             raise Exception(f"No tenants present in class {collection.name}.")
         else:
             for name, tenant in deleting_tenants.items():
                 collection.tenants.remove(Tenant(name=name))
 
     except Exception as e:
-        client.close()
+
         raise Exception(f"Failed to delete tenants: {e}")
 
     tenants_list = collection.tenants.get()
@@ -67,5 +66,3 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
     ), f"Expected {total_tenants - number_tenants} tenants, but found {len(tenants_list)}"
 
     print(f"{number_tenants} tenants deleted")
-
-    client.close()

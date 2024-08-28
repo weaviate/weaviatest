@@ -1,5 +1,3 @@
-import lib.common as common
-import numpy as np
 import weaviate.classes.config as wvc
 
 
@@ -20,14 +18,13 @@ def __delete_data(collection, num_objects, cl):
     return num_objects
 
 
-def delete_data(host, api_key, port, collection, limit, consistency_level):
+def delete_data(client, collection, limit, consistency_level):
 
-    client = common.connect_to_weaviate(host, api_key, port)
     if not client.collections.exists(collection):
         print(
             f"Class '{collection}' does not exist in Weaviate. Create first using <create class> command."
         )
-        client.close()
+
         return 1
 
     collection = client.collections.get(collection)
@@ -58,9 +55,7 @@ def delete_data(host, api_key, port, collection, limit, consistency_level):
                 cl_map[consistency_level],
             )
         if ret == -1:
-            client.close()
+
             raise Exception(
                 f"Failed to delete objects in class '{collection.name}' for tenant '{tenant}'"
             )
-
-    client.close()
