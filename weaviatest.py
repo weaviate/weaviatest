@@ -2,6 +2,7 @@
 
 import click
 import sys
+import traceback
 from lib.create_collection import create_collection
 from lib.create_tenants import create_tenants
 from lib.create_backup import create_backup
@@ -163,6 +164,7 @@ def create_collection_cli(
         )
     except Exception as e:
         print(f"Error: {e}")
+        #traceback.print_exc()  # Print the full traceback
         client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
     client.close()
@@ -735,6 +737,7 @@ def get_tenants_cli(ctx, collection, verbose):
         )
     except Exception as e:
         print(f"Error: {e}")
+        #traceback.print_exc()  # Print the full traceback
         client.close()
         sys.exit(1)  # Return a non-zero exit code on failure
 

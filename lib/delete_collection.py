@@ -15,6 +15,10 @@ def delete_collection(client, collection, all):
                 raise Exception(
                     f"Failed to delete collection '{collection}' in Weaviate.: {e}"
                 )
+        else:
+            raise Exception(
+                f"Collection '{collection}' doesn't exist in Weaviate."
+            )
 
         assert not client.collections.exists(collection)
 

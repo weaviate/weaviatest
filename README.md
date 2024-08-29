@@ -114,4 +114,10 @@ To run the Weaviatest CLI application using Docker, follow these steps:
 
     Note: Make sure you have the Docker daemon running before executing these commands. The application will detect if your docker container is running on MacOS and use `host.docker.internal` as host (otherwise the containerized application won't be able to communicate with `localhost`).
 
+3. If you face issues with the `docker run` command not being able to reach `localhost:8080` (either you are running on a Linux OS or your Docker desktop on Mac has a special network configuration) you will need to pass the `--network=host` option and run all commands like this:
 
+    ````
+    docker run --network=host weaviatest create collection
+    docker run --network=host weaviatest create data
+    docker run --network=host weaviatest delete collection
+    ```
