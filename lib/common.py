@@ -4,20 +4,20 @@ import random
 import weaviate
 
 
-def check_host_docker_internal():
+def check_host_docker_internal(port=8080):
     """Check if host.docker.internal is reachable."""
     try:
         # Attempt to connect to host.docker.internal on any port (e.g., 80)
-        fd = socket.create_connection(("host.docker.internal", 80), timeout=2)
+        fd = socket.create_connection(("host.docker.internal", port), timeout=2)
         fd.close()  # Close the socket
         return True
     except (socket.timeout, socket.error):
         return False
 
 
-def get_host():
+def get_host(port):
     """Determine the appropriate host based on the environment."""
-    if check_host_docker_internal():
+    if check_host_docker_internal(port):
         return "host.docker.internal"  # macOS/Windows Docker
     else:
         return "localhost"  # Default fallback (Linux or unreachable)
@@ -27,7 +27,7 @@ def connect_to_weaviate(host, api_key, port, grpc_port):
     # Connect to Weaviate instance
     if host == "localhost":
         client = weaviate.connect_to_local(
-            host=get_host(), port=port, grpc_port=grpc_port
+            host=get_host(port), port=port, grpc_port=grpc_port
         )
     else:
         client = weaviate.connect_to_wcs(
