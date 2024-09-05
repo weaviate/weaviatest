@@ -1,8 +1,6 @@
 import semver
 from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
 
-import weaviate.classes.config as wvc
-
 
 def create_tenants(client, collection, tenant_suffix, number_tenants, state):
 

@@ -44,12 +44,12 @@ def update_collection(
     mt = col_obj.config.get().multi_tenancy_config.enabled
     auto_tenant_creation = (
         auto_tenant_creation
-        if auto_tenant_creation != None
+        if auto_tenant_creation is not None
         else col_obj.config.get().multi_tenancy_config.auto_tenant_creation
     )
     auto_tenant_activation = (
         auto_tenant_activation
-        if auto_tenant_activation != None
+        if auto_tenant_activation is not None
         else col_obj.config.get().multi_tenancy_config.auto_tenant_activation
     )
 
@@ -58,7 +58,7 @@ def update_collection(
         vectorizer_config=(vector_index_map[vector_index] if vector_index else None),
         replication_config=(
             wvc.Reconfigure.replication(factor=rf, async_enabled=async_enabled)
-            if async_enabled != None
+            if async_enabled is not None
             else None
         ),
         multi_tenancy_config=(
