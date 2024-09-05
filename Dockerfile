@@ -19,3 +19,5 @@ ENTRYPOINT ["python", "weaviatest.py"]
 
 # Optionally, provide a default command to the entrypoint
 # CMD ["--help"]
+
+

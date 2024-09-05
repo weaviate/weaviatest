@@ -5,7 +5,7 @@ def delete_collection(client, collection, all):
         for collection in collections:
             print(f"Deleting collection '{collection}'")
             client.collections.delete(collection)
-        print(f"All collections deleted successfully in Weaviate.")
+        print("All collections deleted successfully in Weaviate.")
     else:
         if client.collections.exists(collection):
             try:
@@ -16,9 +16,7 @@ def delete_collection(client, collection, all):
                     f"Failed to delete collection '{collection}' in Weaviate.: {e}"
                 )
         else:
-            raise Exception(
-                f"Collection '{collection}' doesn't exist in Weaviate."
-            )
+            raise Exception(f"Collection '{collection}' doesn't exist in Weaviate.")
 
         assert not client.collections.exists(collection)
 

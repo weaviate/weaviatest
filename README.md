@@ -55,6 +55,11 @@ Then, run the following command to install the dependencies:
 pip install -r requirements.txt
 ```
 
+### Linting
+
+You can configure the [pre-commit](https://pre-commit.com/) to automatically run all linters locally on each commit. Install `pre-commit` on your system, and then enable it with `pre-commit install`.
+
+
 ## Examples
 
 Here are some examples of how to use the Weaviatest CLI:

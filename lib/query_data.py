@@ -37,7 +37,7 @@ def __query_data(collection, num_objects, cl, search_type, query):
         )
         return -1
 
-    if response != None:
+    if response is not None:
         common.pp_objects(response)
     else:
         print("No objects found")

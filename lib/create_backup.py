@@ -1,9 +1,8 @@
 import semver
-from weaviate.backup.backup import BackupCompressionLevel, BackupConfigCreate
+from weaviate.backup.backup import BackupConfigCreate
 
 
 def create_backup(client, backup_id, backend, include, exclude, wait, cpu_for_backup):
-
     version = semver.Version.parse(client.get_meta()["version"])
     if include:
         for collection in include.split(","):

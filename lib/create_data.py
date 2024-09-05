@@ -1,7 +1,6 @@
 import lib.common as common
 import json
 import numpy as np
-import string
 import random
 import weaviate.classes.config as wvc
 import os
@@ -134,7 +133,7 @@ def ingest_data(client, collection, limit, consistency_level, randomize, auto_te
             tenants = ["None"]
     if (
         auto_tenants > 0
-        and collection.config.get().multi_tenancy_config.auto_tenant_creation == False
+        and collection.config.get().multi_tenancy_config.auto_tenant_creation is False
     ):
 
         raise Exception(

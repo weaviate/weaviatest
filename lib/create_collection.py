@@ -83,7 +83,7 @@ def create_collection(
     ]
 
     try:
-        col_obj = client.collections.create(
+        client.collections.create(
             name=collection,
             vector_index_config=vector_index_map[vector_index],
             replication_config=wvc.Configure.replication(

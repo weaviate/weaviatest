@@ -15,7 +15,7 @@ def __get_total_objects_with_multitenant(col_obj):
 
 def get_collection(client, collection):
 
-    if collection != None:
+    if collection is not None:
         if not client.collections.exists(collection):
 
             raise Exception(f"Collection '{collection}' does not exist")

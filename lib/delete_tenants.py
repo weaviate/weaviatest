@@ -1,6 +1,6 @@
 import lib.common as common
 import semver
-from weaviate.collections.classes.tenants import TenantActivityStatus, Tenant
+from weaviate.collections.classes.tenants import Tenant
 
 
 def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenants):
@@ -33,6 +33,7 @@ def delete_tenants(host, api_key, port, collection, tenant_suffix, number_tenant
                 for name, tenant in collection.tenants.get().items()
                 if name.startswith(tenant_suffix)
             }
+            print("hello")
             deleting_tenants = {
                 name: tenant
                 for name, tenant in tenants_list.items()
