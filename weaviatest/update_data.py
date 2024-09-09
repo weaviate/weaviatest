@@ -1,4 +1,4 @@
-import lib.common as common
+import weaviatest.common as common
 import numpy as np
 import random
 import weaviate.classes.config as wvc

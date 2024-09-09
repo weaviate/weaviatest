@@ -1,4 +1,4 @@
-import lib.common as common
+import weaviatest.common as common
 import weaviate.classes.config as wvc
 from weaviate.classes.query import MetadataQuery
 from weaviate.collections.classes.tenants import TenantActivityStatus

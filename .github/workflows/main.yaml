@@ -21,8 +21,19 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip' # caching pip dependencies
-      - run: pip install -r requirements.txt
+      - run: pip install -r dev-requirements.txt
       - name: "Black"
-        run: black --check weaviatest.py lib/
+        run: black --check weaviatest.py weaviatest/
       - name: "Flake 8"
-        run: flake8 weaviatest.py lib/
+        run: flake8 weaviatest.py weaviatest/
+
+  pip-install:
+    name: Install the pip package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip' # caching pip dependencies
+      - run: make env_install

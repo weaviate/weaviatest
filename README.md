@@ -35,25 +35,51 @@ The Weaviatest CLI provides the following actions:
 
 You can run the Weaviatest CLI directly from the command line.
 
-## Requirements
+## Install
 
-The Weaviatest CLI requires the following dependencies, which are listed in the `requirements.txt` file. If the required client changes are not yet published, you can use a branch from the `weaviate-python-client` repository. To do so, add the following requirement to the `requirements.txt` file:
-
+Weaviatest can be installed as a pip package to do so, you can run the command:
+``` bash
+pip install -U pip setuptools
 ```
+
+As an alternative, the pip package can be install with the flag -e to make the installation package editable
+``` bash
+pip install -e -U pip setuptools
+```
+
+Finally, there is a Makefile to facilitate the creation of a python environment and install the weaviatest package:
+``` bash
+make env_install
+source .venv/bin/activate
+```
+
+### Requirements
+
+The Weaviatest CLI requires the following dependencies, which are listed in the `setup.cfg` file. If the required client changes are not yet published, you can use a branch from the `weaviate-python-client` repository. To do so, add the following requirement to the `setup.cfg` file:
+
+```bash
 weaviate-client @ git+https://github.com/weaviate/weaviate-python-client.git@<branch>
 ```
 
 For example:
 
-```
+```bash
 weaviate-client @ git+https://github.com/weaviate/weaviate-python-client.git@dev/1.26
 ```
 
 Then, run the following command to install the dependencies:
 
+```bash
+pip install -U pip setuptools
 ```
-pip install -r requirements.txt
+
+#### Dev requirements
+
+For development, there are extra requirements to be installed. They can be install once the virtual environment has been activated, and the run:
+``` bash
+pip install -r dev-requirements.txt
 ```
+
 
 ### Linting
 

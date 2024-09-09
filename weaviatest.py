@@ -3,21 +3,21 @@
 import click
 import sys
 
-from lib.create_collection import create_collection
-from lib.create_tenants import create_tenants
-from lib.create_backup import create_backup
-from lib.delete_collection import delete_collection
-from lib.delete_data import delete_data
-from lib.delete_tenants import delete_tenants
-from lib.create_data import ingest_data
-from lib.update_collection import update_collection
-from lib.update_data import update_data
-from lib.update_tenants import update_tenants
-from lib.query_data import query_data
-from lib.restore_backup import restore_backup
-from lib.get_collection import get_collection
-from lib.get_tenants import get_tenants
-from lib.common import connect_to_weaviate
+from weaviatest.create_collection import create_collection
+from weaviatest.create_tenants import create_tenants
+from weaviatest.create_backup import create_backup
+from weaviatest.delete_collection import delete_collection
+from weaviatest.delete_data import delete_data
+from weaviatest.delete_tenants import delete_tenants
+from weaviatest.create_data import ingest_data
+from weaviatest.update_collection import update_collection
+from weaviatest.update_data import update_data
+from weaviatest.update_tenants import update_tenants
+from weaviatest.query_data import query_data
+from weaviatest.restore_backup import restore_backup
+from weaviatest.get_collection import get_collection
+from weaviatest.get_tenants import get_tenants
+from weaviatest.common import connect_to_weaviate
 
 
 # General CLI group for Weaviate operations

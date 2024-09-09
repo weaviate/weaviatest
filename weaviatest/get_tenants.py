@@ -31,3 +31,4 @@ def get_tenants(client, collection, verbose):
         print(
             f"{len(tenants):<20}{len(inactive_tenants):<20}{len(active_tenants):<20}{len(offoaded_tenants):<20}"
         )
+    return tenants

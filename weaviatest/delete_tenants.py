@@ -1,4 +1,4 @@
-import lib.common as common
+import weaviatest.common as common
 import semver
 from weaviate.collections.classes.tenants import Tenant
 
