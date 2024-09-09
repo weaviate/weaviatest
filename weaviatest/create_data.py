@@ -1,4 +1,4 @@
-import lib.common as common
+import weaviatest.common as common
 import json
 import numpy as np
 import random
