@@ -31,7 +31,7 @@ The Weaviatest CLI provides the following actions:
 
 ### Query
 
-- Query: `weaviatest.py query data --collection <collection> --query <query>`
+- Query: `weaviatest.py query data --collection <collection> --search_type <search_type>`
 
 You can run the Weaviatest CLI directly from the command line.
 
@@ -77,6 +77,7 @@ weaviatest.py update tenants --collection "Films" --number_tenants 50 --state ho
 weaviatest.py update data --collection "Films" --limit 50 --consistency_level all
 weaviatest.py delete collection --collection "Films"
 weaviatest.py restore backup --backup_id "my-films-backup" --wait
+weaviatest.py query data --collection "Movies" --search_type fetch --limit 100
 ```
 
 ## Docker image
