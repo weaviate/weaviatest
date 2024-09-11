@@ -642,7 +642,7 @@ def restore_backup_cli(ctx, backend, backup_id, wait):
 @click.option(
     "--search_type",
     default="fetch",
-    type=click.Choice(["fetch", "vector", "keyword", "hybrid" , "count"]),
+    type=click.Choice(["fetch", "vector", "keyword", "hybrid", "count"]),
     help='Search type (default: "fetch").',
 )
 @click.option(

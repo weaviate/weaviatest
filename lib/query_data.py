@@ -23,9 +23,7 @@ def __query_data(collection, num_objects, cl, search_type, query):
         )
     elif search_type == "count":
         # Aggregate logic
-        res = collection.with_consistency_level(cl).aggregate.over_all(
-            total_count= True
-            )
+        res = collection.with_consistency_level(cl).aggregate.over_all(total_count=True)
         total_object_count = res.total_count
     elif search_type == "keyword":
         # Keyword logic
@@ -50,8 +48,7 @@ def __query_data(collection, num_objects, cl, search_type, query):
     else:
         print("No objects found")
         return -1
-   
-    
+
     end_time = datetime.now()
     latency = end_time - start_time
 
