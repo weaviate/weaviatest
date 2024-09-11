@@ -21,6 +21,12 @@ def __query_data(collection, num_objects, cl, search_type, query):
             return_metadata=MetadataQuery(distance=True, certainty=True),
             limit=num_objects,
         )
+    elif search_type == "count":
+        # Aggregate logic
+        res = collection.with_consistency_level(cl).aggregate.over_all(
+            total_count= True
+            )
+        total_object_count = res.total_count
     elif search_type == "keyword":
         # Keyword logic
         response = collection.with_consistency_level(cl).query.bm25(
@@ -33,15 +39,19 @@ def __query_data(collection, num_objects, cl, search_type, query):
         )
     else:
         print(
-            f"Invalid search type: {search_type}. Please choose from 'fetch', 'vector', 'keyword', or 'hybrid'."
+            f"Invalid search type: {search_type}. Please choose from 'fetch objects', 'vector', 'keyword', or 'hybrid'."
         )
         return -1
 
     if response is not None:
         common.pp_objects(response)
+    elif total_object_count is not None:
+        print(total_object_count)
     else:
         print("No objects found")
         return -1
+   
+    
     end_time = datetime.now()
     latency = end_time - start_time
 

@@ -31,7 +31,7 @@ The Weaviatest CLI provides the following actions:
 
 ### Query
 
-- Query: `weaviatest.py query --collection <collection> --query <query>`
+- Query: `weaviatest.py query data --collection <collection> --query <query>`
 
 You can run the Weaviatest CLI directly from the command line.
 
