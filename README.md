@@ -79,6 +79,12 @@ weaviatest.py delete collection --collection "Films"
 weaviatest.py restore backup --backup_id "my-films-backup" --wait
 weaviatest.py query data --collection "Movies" --search_type fetch --limit 100
 ```
+examples when using in WCD clusters
+```
+weaviatest.py --host <wcd_host_url> --api_key <wcd_api_key> --port 443 create collection --multitenant --vector_index hnsw --replication_factor 3
+weaviatest.py --host <wcd_host_url> --api_key <wcd_api_key> --port 443 create tenants --collection Movies --number_tenants 1
+weaviatest.py --host  <wcd_host_url> --api_key <wcd_api_key> --port 443 create data --collection "Movies" --limit 1000 --consistency_level all --randomize
+```
 
 ## Docker image
 
