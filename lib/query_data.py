@@ -33,7 +33,7 @@ def __query_data(collection, num_objects, cl, search_type, query):
         )
     else:
         print(
-            f"Invalid search type: {search_type}. Please choose from 'fetch objects', 'vector', 'keyword', or 'hybrid'."
+            f"Invalid search type: {search_type}. Please choose from 'fetch', 'vector', 'keyword', or 'hybrid'."
         )
         return -1
 
