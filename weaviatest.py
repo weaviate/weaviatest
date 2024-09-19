@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import traceback
 import click
 import sys
 
@@ -17,6 +18,8 @@ from lib.query_data import query_data
 from lib.restore_backup import restore_backup
 from lib.get_collection import get_collection
 from lib.get_tenants import get_tenants
+from lib.get_backup import get_backup
+from lib.cancel_backup import cancel_backup
 from lib.common import connect_to_weaviate
 
 
@@ -78,6 +81,11 @@ def restore():
 @cli.group()
 def get():
     """Get and list resources in Weaviate."""
+    pass
+
+@cli.group()
+def cancel():
+    """Cancel operations in Weaviate."""
     pass
 
 
@@ -606,10 +614,20 @@ def update_tenants_cli(ctx, collection, tenant_suffix, number_tenants, state):
     help="Identifier used for the backup (default: test-backup).",
 )
 @click.option(
+    "--include",
+    default=None,
+    help="Comma separated list of collections to include in the backup. If not provided, all collections will be included.",
+)
+@click.option(
+    "--exclude",
+    default=None,
+    help="Comma separated list of collections to exclude from the backup. If not provided, all collections will be included.",
+)
+@click.option(
     "--wait", is_flag=True, help="Wait for the backup to complete before returning."
 )
 @click.pass_context
-def restore_backup_cli(ctx, backend, backup_id, wait):
+def restore_backup_cli(ctx, backend, backup_id, include, exclude, wait):
     """Restore a backup in Weaviate."""
 
     # Access the general arguments from the context object
@@ -625,6 +643,8 @@ def restore_backup_cli(ctx, backend, backup_id, wait):
             client=client,
             backend=backend,
             backup_id=backup_id,
+            include=include,
+            exclude=exclude,
             wait=wait,
         )
     except Exception as e:
@@ -743,6 +763,76 @@ def get_tenants_cli(ctx, collection, verbose):
 
     client.close()
 
+@get.command("backup")
+@click.option(
+    "--backend",
+    default="s3",
+    type=click.Choice(["s3", "gcs", "filesystem"]),
+    help="The backend used for storing the backups (default: s3).",
+)
+@click.option(
+    "--backup_id",
+    default=None,
+    help="Identifier for the backup you want to get its status.",
+)
+@click.option(
+    "--restore",
+    is_flag=True,
+    help="Get the status of the restoration job for the backup.",
+)
+@click.pass_context
+def get_backup_cli(ctx, backend, backup_id, restore):
+    """ List backups in Weaviate. If --backup_id is provided, get the specific backup status."""
+    
+    # Access the general arguments from the context object
+    host = ctx.obj["host"]
+    api_key = ctx.obj["api_key"]
+    port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
+    
+    try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
+        # Call the function from get_backup.py with general and specific arguments
+        get_backup(client=client, backend=backend, backup_id=backup_id, restore=restore)
+    except Exception as e:
+        print(f"Error: {e}")
+        #traceback.print_exc()  # Print the full traceback
+        client.close()
+        sys.exit(1)
+        
+    client.close()
 
+@cancel.command("backup")
+@click.option(
+    "--backend",
+    default="s3",
+    type=click.Choice(["s3", "gcs", "filesystem"]),
+    help="The backend used for storing the backups (default: s3).",
+)
+@click.option(
+    "--backup_id",
+    default="test-backup",
+    help="Identifier used for the backup (default: test-backup).",
+)
+@click.pass_context
+def cancel_backup_cli(ctx, backend, backup_id):
+    """Cancel a backup in Weaviate."""
+    
+    # Access the general arguments from the context object
+    host = ctx.obj["host"]
+    api_key = ctx.obj["api_key"]
+    port = ctx.obj["port"]
+    grpc_port = ctx.obj["grpc_port"]
+    
+    try:
+        client = connect_to_weaviate(host, api_key, port, grpc_port)
+        cancel_backup(client=client, backend=backend, backup_id=backup_id)
+    except Exception as e:
+        print(f"Error: {e}")
+        #traceback.print_exc()  # Print the full traceback
+        client.close()
+        sys.exit(1)
+    client.close()
+    
 if __name__ == "__main__":
     cli()

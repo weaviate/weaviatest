@@ -1,5 +1,5 @@
-# weaviate-client @ git+https://github.com/weaviate/weaviate-python-client.git@dev/1.26
-weaviate-client
+weaviate-client @ git+https://github.com/weaviate/weaviate-python-client.git@list_backups
+#weaviate-client
 numpy
 semver
 click
