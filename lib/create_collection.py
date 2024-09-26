@@ -7,6 +7,7 @@ def create_collection(
     replication_factor,
     async_enabled,
     vector_index,
+    inverted_index,
     training_limit,
     multitenant,
     auto_tenant_creation,
@@ -25,6 +26,7 @@ def create_collection(
     vector_index_map = {
         "hnsw": wvc.Configure.VectorIndex.hnsw(),
         "flat": wvc.Configure.VectorIndex.flat(),
+        "dynamic": wvc.Configure.VectorIndex.dynamic(),
         "hnsw_pq": wvc.Configure.VectorIndex.hnsw(
             quantizer=wvc.Configure.VectorIndex.Quantizer.pq(
                 training_limit=training_limit
@@ -66,6 +68,12 @@ def create_collection(
         ),
     }
 
+    inverted_index_map = {
+        "timestamp": wvc.Configure.inverted_index(index_timestamps=True),
+        "null": wvc.Configure.inverted_index(index_null_state=True),
+        "length": wvc.Configure.inverted_index(index_property_length=True),
+    }
+
     properties = [
         wvc.Property(name="title", data_type=wvc.DataType.TEXT),
         wvc.Property(name="genres", data_type=wvc.DataType.TEXT),
@@ -86,6 +94,9 @@ def create_collection(
         client.collections.create(
             name=collection,
             vector_index_config=vector_index_map[vector_index],
+            inverted_index_config=(
+                inverted_index_map[inverted_index] if inverted_index else None
+            ),
             replication_config=wvc.Configure.replication(
                 factor=replication_factor, async_enabled=async_enabled
             ),

@@ -93,8 +93,14 @@ def get():
 @click.option(
     "--vector_index",
     default="hnsw",
-    type=click.Choice(["hnsw", "flat", "hnsw_pq", "hnsw_bq", "hnsw_sq", "flat_bq"]),
+    type=click.Choice(["hnsw", "flat", "dynamic", "hnsw_pq", "hnsw_bq", "hnsw_sq", "flat_bq"]),
     help="Vector index type (default: 'hnsw').",
+)
+@click.option(
+    "--inverted_index",
+    default=None,
+    type=click.Choice(["timestamp", "null", "length"]),
+    help="Inverted index properties (default: None). Options: 'timestamp'==index_timestamps, 'null'==index_null_state, 'length'==index_property_length.",
 )
 @click.option(
     "--training_limit",
@@ -129,6 +135,7 @@ def create_collection_cli(
     replication_factor,
     async_enabled,
     vector_index,
+    inverted_index,
     training_limit,
     multitenant,
     auto_tenant_creation,
@@ -154,6 +161,7 @@ def create_collection_cli(
             replication_factor=replication_factor,
             async_enabled=async_enabled,
             vector_index=vector_index,
+            inverted_index=inverted_index,
             training_limit=training_limit,
             multitenant=multitenant,
             auto_tenant_creation=auto_tenant_creation,
@@ -657,8 +665,9 @@ def restore_backup_cli(ctx, backend, backup_id, wait):
     help="Consistency level (default: 'quorum').",
 )
 @click.option("--limit", default=10, help="Number of objects to query (default: 10).")
+@click.option("--properties", default="title,keywords", help="Properties from the object to display (default: 'title, keywords').")
 @click.pass_context
-def query_data_cli(ctx, collection, search_type, query, consistency_level, limit):
+def query_data_cli(ctx, collection, search_type, query, consistency_level, limit, properties):
     """Query data in a collection in Weaviate."""
 
     # Access the general arguments from the context object
@@ -677,6 +686,7 @@ def query_data_cli(ctx, collection, search_type, query, consistency_level, limit
             query=query,
             consistency_level=consistency_level,
             limit=limit,
+            properties=properties,
         )
     except Exception as e:
         print(f"Error: {e}")

@@ -5,7 +5,7 @@ from weaviate.collections.classes.tenants import TenantActivityStatus
 from datetime import datetime
 
 
-def __query_data(collection, num_objects, cl, search_type, query):
+def __query_data(collection, num_objects, cl, search_type, query, properties):
 
     start_time = datetime.now()
     response = None
@@ -24,7 +24,9 @@ def __query_data(collection, num_objects, cl, search_type, query):
     elif search_type == "keyword":
         # Keyword logic
         response = collection.with_consistency_level(cl).query.bm25(
-            query=query, return_metadata=MetadataQuery(score=True), limit=num_objects
+            query=query,
+            return_metadata=MetadataQuery(score=True, explain_score=True),
+            limit=num_objects,
         )
     elif search_type == "hybrid":
         # Hybrid logic
@@ -38,7 +40,8 @@ def __query_data(collection, num_objects, cl, search_type, query):
         return -1
 
     if response is not None:
-        common.pp_objects(response)
+        properties_list = [prop.strip() for prop in properties.split(",")]
+        common.pp_objects(response, properties_list)
     else:
         print("No objects found")
         return -1
@@ -51,7 +54,9 @@ def __query_data(collection, num_objects, cl, search_type, query):
     return num_objects
 
 
-def query_data(client, collection, search_type, query, consistency_level, limit):
+def query_data(
+    client, collection, search_type, query, consistency_level, limit, properties
+):
 
     if not client.collections.exists(collection):
 
@@ -88,6 +93,7 @@ def query_data(client, collection, search_type, query, consistency_level, limit)
                 cl_map[consistency_level],
                 search_type,
                 query,
+                properties,
             )
         else:
             print(f"Querying tenant '{tenant}'")
@@ -97,6 +103,7 @@ def query_data(client, collection, search_type, query, consistency_level, limit)
                 cl_map[consistency_level],
                 search_type,
                 query,
+                properties,
             )
         if ret == -1:
 
