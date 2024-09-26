@@ -32,7 +32,9 @@ def connect_to_weaviate(host, api_key, port, grpc_port):
     # Connect to Weaviate instance
     if host == "localhost":
         client = weaviate.connect_to_local(
-            host=get_host(port), port=port, grpc_port=grpc_port,
+            host=get_host(port),
+            port=port,
+            grpc_port=grpc_port,
             headers=headers if openai_key is not None else None,
         )
     else:
@@ -53,16 +55,30 @@ def get_random_string(length):
 
 
 # Pretty print objects in the response in a table format
-def pp_objects(response):
+def pp_objects(response, main_properties):
+
     if len(response.objects) == 0:
         print("No objects found")
         return
-    print(
-        f"{'ID':<37}{'Title':<37}{'Keywords':<37}{'Distance':<11}{'Certainty':<11}{'Score':<11}"
-    )
+
+    # Create the header
+    header = f"{'ID':<37}"
+    for prop in main_properties:
+        header += f"{prop.capitalize():<37}"
+    header += f"{'Distance':<11}{'Certainty':<11}{'Score':<11}"
+    print(header)
+
+    # Print each object
     for obj in response.objects:
-        print(
-            f'{str(obj.uuid):<36} {obj.properties["title"][:36]:<36} {obj.properties["keywords"][:36]:<36} {obj.metadata.distance if obj.metadata.distance else "None":<10} {obj.metadata.certainty if obj.metadata.certainty else "None":<10} {obj.metadata.score if obj.metadata.score else "None":<10}'
-        )
-    print(f"{'':<37}{'':<37}{'':<37}{'':<11}{'':<11}{'':<11}")
+        row = f"{str(obj.uuid):<36} "
+        for prop in main_properties:
+            row += f"{obj.properties.get(prop, '')[:36]:<36} "
+        row += f"{str(obj.metadata.distance)[:10] if obj.metadata.distance else 'None':<10} "
+        row += f"{str(obj.metadata.certainty)[:10] if obj.metadata.certainty else 'None':<10} "
+        row += f"{str(obj.metadata.score)[:10] if obj.metadata.score else 'None':<10}"
+        print(row)
+
+    # Print footer
+    footer = f"{'':<37}" * (len(main_properties) + 1) + f"{'':<11}{'':<11}{'':<11}"
+    print(footer)
     print(f"Total: {len(response.objects)} objects")
