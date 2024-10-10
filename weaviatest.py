@@ -605,11 +605,24 @@ def update_tenants_cli(ctx, collection, tenant_suffix, number_tenants, state):
     default="test-backup",
     help="Identifier used for the backup (default: test-backup).",
 )
+
+@click.option(
+    "--include",
+    default=None,
+    help="Collection to include in backup (default: None).",
+)
+
+@click.option(
+    "--exclude",
+    default=None,
+    help="Collection to exclude in backup (default: None).",
+)
+
 @click.option(
     "--wait", is_flag=True, help="Wait for the backup to complete before returning."
 )
 @click.pass_context
-def restore_backup_cli(ctx, backend, backup_id, wait):
+def restore_backup_cli(ctx, backend, include, exclude, backup_id, wait):
     """Restore a backup in Weaviate."""
 
     # Access the general arguments from the context object
@@ -625,6 +638,8 @@ def restore_backup_cli(ctx, backend, backup_id, wait):
             client=client,
             backend=backend,
             backup_id=backup_id,
+            include=include,
+            exclude=exclude,
             wait=wait,
         )
     except Exception as e:

@@ -42,6 +42,7 @@ def __query_data(collection, num_objects, cl, search_type, query):
     else:
         print("No objects found")
         return -1
+
     end_time = datetime.now()
     latency = end_time - start_time
 
